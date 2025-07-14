@@ -1,5 +1,5 @@
 // migrate.ts
-import { pool } from './src/_migrations/db.ts';
+import { pool } from './db.ts';
 
 const migrate = async () => {
     try {
