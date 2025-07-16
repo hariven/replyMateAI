@@ -1,7 +1,9 @@
 import express, { Request, Response } from 'express'
 import { sendWhatsAppMessage } from './services/whatsapp.ts'
 import { getAIReply } from './services/openai.ts'
-import { pool } from 'pg'
+import { pool } from './_migrations/db.ts'
+
+// const pool = new Pool()
 
 const router = express.Router()
 
