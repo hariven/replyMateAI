@@ -23,7 +23,7 @@ router.get('/', (req: Request, res: Response) => {
 })
 
 // ✅ For Incoming WhatsApp Messages
-router.post('/', async (req: Request, res: Response) => {
+router.post('/webhook', async (req: Request, res: Response) => {
     // try {
     const entry = req.body.entry?.[0]
     const changes = entry?.changes?.[0]
@@ -73,6 +73,47 @@ router.post('/', async (req: Request, res: Response) => {
         res.sendStatus(500)
     }
 })
+
+// ✅ New route to save knowledge base from the frontend
+router.post('/save-knowledge', async (req: Request, res: Response) => {
+    const { name, whatsapp_number, content } = req.body
+
+    if (!whatsapp_number || !content) {
+        return res.status(400).send('Missing whatsapp_number or content')
+    }
+
+    try {
+        // const { rows: businesses } = await pool.query(
+        //     'SELECT * FROM business WHERE whatsapp_number = $1',
+        //     [whatsapp_number]
+        // )
+        // let business = businesses[0]
+
+        // if (!business) {
+        const insertRes = await pool.query(`
+            INSERT INTO business (name, whatsapp_number)
+  VALUES ($1, $2)
+  ON CONFLICT (whatsapp_number) DO UPDATE SET name = EXCLUDED.name
+  RETURNING *
+            `,
+            [name, whatsapp_number]
+        )
+        let business = insertRes.rows[0]
+        // }
+
+        await pool.query(
+            'INSERT INTO knowledge_base (business_id, content) VALUES ($1, $2)',
+            [business.id, content]
+        )
+
+        return res.status(200).send('Knowledge base saved')
+    } catch (err) {
+        console.error('❌ Error saving knowledge:', err)
+        return res.status(500).send('Internal server error')
+    }
+})
+
+
 
 //         if (message?.text?.body) {
 //             const phoneNumber = message.from
