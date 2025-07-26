@@ -31,6 +31,22 @@ router.post('/webhook', async (req: Request, res: Response) => {
     const to = changes?.value?.metadata?.display_phone_number
     const from = message?.from
     const userText = message?.text?.body
+    const value = changes?.value;
+
+    console.log("Webhook received:", {
+        entry,
+        changes,
+        message,
+        to,
+        from,
+        userText
+    })
+
+    // 1. If it's a status event, just log and ignore
+    if (value?.statuses) {
+        console.log("Received status event:", value.statuses);
+        return res.sendStatus(200); // exit early
+    }
 
     if (!from || !to || !userText) {
         return res.sendStatus(400)
@@ -43,6 +59,11 @@ router.post('/webhook', async (req: Request, res: Response) => {
             [to]
         )
         const business = businesses[0]
+
+        console.log("Webhook received for business:", business)
+
+        console.log("Webhook 'to' number:", to);
+        console.log("Webhook 'from' number:", from);
 
         if (!business) {
             await sendWhatsAppMessage(from, 'Business not found in the system.')
@@ -62,7 +83,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
         }
 
         // Step 3: Ask OpenAI
-        const aiReply = await getAIReply(knowledge, userText)
+        const aiReply = await getAIReply(knowledge, userText, business)
 
         // Step 4: Send reply back to WhatsApp
         await sendWhatsAppMessage(from, aiReply)
