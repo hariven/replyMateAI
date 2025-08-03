@@ -404,14 +404,14 @@ const Dashboard: React.FC<DashboardProps> = () => {
   //   </div>
   // );
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Mock data
-  const connectedBusinesses = 12
+  const connectedBusinesses = 12;
   // const totalConversations = 1847
-  const responseRate = 94
-  
+  const responseRate = 94;
+
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -421,7 +421,9 @@ const Dashboard: React.FC<DashboardProps> = () => {
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center space-x-2">
                 <ChatIcon className="h-8 w-8 text-blue-600" />
-                <span className="text-xl font-bold text-gray-900">ReplyMate AI</span>
+                <span className="text-xl font-bold text-gray-900">
+                  ReplyMate AI
+                </span>
               </div>
 
               {/* Desktop Navigation */}
@@ -429,8 +431,10 @@ const Dashboard: React.FC<DashboardProps> = () => {
                 <Button>Features</Button>
                 <Button>Pricing</Button>
                 <Button>About</Button>
-                <Button className="flex items-center gap-2 bg-transparent"
-                onClick={() => setIsLoggedIn(true)}>
+                <Button
+                  className="flex items-center gap-2 bg-transparent"
+                  onClick={() => setIsLoggedIn(true)}
+                >
                   <LogIn className="h-4 w-4" />
                   Login
                 </Button>
@@ -443,7 +447,11 @@ const Dashboard: React.FC<DashboardProps> = () => {
               {/* Mobile menu button */}
               <div className="md:hidden">
                 <Button onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                  {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" open={false} />}
+                  {isMenuOpen ? (
+                    <X className="h-6 w-6" />
+                  ) : (
+                    <Menu className="h-6 w-6" open={false} />
+                  )}
                 </Button>
               </div>
             </div>
@@ -453,15 +461,9 @@ const Dashboard: React.FC<DashboardProps> = () => {
           {isMenuOpen && (
             <div className="md:hidden bg-white border-t border-gray-200">
               <div className="px-2 pt-2 pb-3 space-y-1">
-                <Button className="w-full justify-start">
-                  Features
-                </Button>
-                <Button className="w-full justify-start">
-                  Pricing
-                </Button>
-                <Button className="w-full justify-start">
-                  About
-                </Button>
+                <Button className="w-full justify-start">Features</Button>
+                <Button className="w-full justify-start">Pricing</Button>
+                <Button className="w-full justify-start">About</Button>
                 <Button className="w-full justify-start gap-2 bg-transparent">
                   <LogIn className="h-4 w-4" />
                   Login
@@ -483,13 +485,12 @@ const Dashboard: React.FC<DashboardProps> = () => {
               <span className="text-blue-600"> AI-Powered Bots</span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Automate customer conversations, boost response rates, and grow your business with intelligent WhatsApp
-              bots that understand your customers.
+              Automate customer conversations, boost response rates, and grow
+              your business with intelligent WhatsApp bots that understand your
+              customers.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="text-lg px-8 py-3">
-                Start Free Trial
-              </Button>
+              <Button className="text-lg px-8 py-3">Start Free Trial</Button>
               <Button className="text-lg px-8 py-3 bg-transparent">
                 Watch Demo
               </Button>
@@ -513,148 +514,170 @@ const Dashboard: React.FC<DashboardProps> = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (isLoggedIn) {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Navigation */}
-      <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2">
-              <ChatIcon className="h-8 w-8 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900">ReplyMate AI</span>
-            </div>
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        {/* Navigation */}
+        <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center space-x-2">
+                <ChatIcon className="h-8 w-8 text-blue-600" />
+                <span className="text-xl font-bold text-gray-900">
+                  ReplyMate AI
+                </span>
+              </div>
 
-            <div className="flex items-center space-x-4">
-              {/* <Avatar> */}
+              <div className="flex items-center space-x-4">
+                {/* <Avatar> */}
                 {/* <AvatarImage src="/placeholder-user.jpg" />
                 <AvatarFallback>JD</AvatarFallback> */}
                 <Person className="h-6 w-6 text-blue-600" />
-              {/* </Avatar> */}
-              <Button onClick={() => setIsLoggedIn(false)}>
-                Logout
-              </Button>
+                {/* </Avatar> */}
+                <Button onClick={() => setIsLoggedIn(false)}>Logout</Button>
+              </div>
             </div>
           </div>
-        </div>
-      </nav>
+        </nav>
 
-      {/* Dashboard Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, John! 👋</h1>
-          <p className="text-gray-600">Here's what's happening with your connected businesses today.</p>
-        </div>
+        {/* Dashboard Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Welcome Section */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Welcome back, John! 👋
+            </h1>
+            <p className="text-gray-600">
+              Here's what's happening with your connected businesses today.
+            </p>
+          </div>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div className="text-sm font-medium text-gray-600">Connected Businesses</div>
-              {/* <Building2 className="h-5 w-5 text-blue-600" /> */}
-            </CardContent>
-            <CardContent>
-              <div className="text-3xl font-bold text-gray-900">{connectedBusinesses}</div>
-              <div className="flex items-center mt-2">
-                <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
-                <span className="text-sm text-green-600">+2 this month</span>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Key Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <CardContent className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="text-sm font-medium text-gray-600">
+                  Connected Businesses
+                </div>
+                {/* <Building2 className="h-5 w-5 text-blue-600" /> */}
+              </CardContent>
+              <CardContent>
+                <div className="text-3xl font-bold text-gray-900">
+                  {connectedBusinesses}
+                </div>
+                <div className="flex items-center mt-2">
+                  <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
+                  <span className="text-sm text-green-600">+2 this month</span>
+                </div>
+              </CardContent>
+            </Card>
 
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div className="text-sm font-medium text-gray-600">Response Rate</div>
-              {/* <Bot className="h-5 w-5 text-purple-600" /> */}
-            </CardContent>
-            <CardContent>
-              <div className="text-3xl font-bold text-gray-900">{responseRate}%</div>
-              <div className="flex items-center mt-2">
-                <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
-                <span className="text-sm text-green-600">+3% this week</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <CardContent className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="text-sm font-medium text-gray-600">
+                  Response Rate
+                </div>
+                {/* <Bot className="h-5 w-5 text-purple-600" /> */}
+              </CardContent>
+              <CardContent>
+                <div className="text-3xl font-bold text-gray-900">
+                  {responseRate}%
+                </div>
+                <div className="flex items-center mt-2">
+                  <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
+                  <span className="text-sm text-green-600">+3% this week</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* Quick Actions */}
-        <div className="bg-white border border-gray-200 shadow-sm mb-12">
-          {/* Create New Bot */}
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent onClick={() => navigate("/kb-editor")}>
-              <div className="flex items-center gap-2">
-                <Plus className="h-5 w-5 text-blue-600" />
-                Create New Bot
-              </div>
-              <div className="text-sm text-gray-500">
-                Connect a new business and set up an AI-powered WhatsApp bot in minutes.
-              </div>
-            </CardContent>
-            <CardContent className="space-y-4">
-              <Button className="w-full" onClick={() => navigate("/kb-editor")}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add New Business
-              </Button>
-              <div className="text-sm text-gray-500 text-center">Setup takes less than 5 minutes</div>
-            </CardContent>
-          </Card>
-{/*  */}
-        </div>
+          {/* Quick Actions */}
+          <div className="bg-white border border-gray-200 shadow-sm mb-12">
+            {/* Create New Bot */}
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <CardContent onClick={() => navigate("/kb-editor")}>
+                <div className="flex items-center gap-2">
+                  <Plus className="h-5 w-5 text-blue-600" />
+                  Create New Bot
+                </div>
+                <div className="text-sm text-gray-500">
+                  Connect a new business and set up an AI-powered WhatsApp bot
+                  in minutes.
+                </div>
+              </CardContent>
+              <CardContent className="space-y-4">
+                <Button
+                  className="w-full"
+                  onClick={() => navigate("/kb-editor")}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add New Business
+                </Button>
+                <div className="text-sm text-gray-500 text-center">
+                  Setup takes less than 5 minutes
+                </div>
+              </CardContent>
+            </Card>
+            {/*  */}
+          </div>
 
-        {/* Your Businesses - Simplified */}
-        <div className="mt-8">
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent>
-              <div>Your Connected Businesses</div>
-              <div className="text-sm text-gray-500">Manage and monitor your AI-powered business bots.</div>
-            </CardContent>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="p-4 border rounded-lg bg-gray-50">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-medium">Tech Solutions Inc</h3>
-                    <Badge className="bg-green-100 text-green-800">
-                      Active
-                    </Badge>
+          {/* Your Businesses - Simplified */}
+          <div className="mt-8">
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <CardContent>
+                <div>Your Connected Businesses</div>
+                <div className="text-sm text-gray-500">
+                  Manage and monitor your AI-powered business bots.
+                </div>
+              </CardContent>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="p-4 border rounded-lg bg-gray-50">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-medium">Tech Solutions Inc</h3>
+                      <Badge className="bg-green-100 text-green-800">
+                        Active
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-2">+1234567890</p>
+                    <div className="text-sm">
+                      <span className="font-medium">156</span> conversations
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">+1234567890</p>
-                  <div className="text-sm">
-                    <span className="font-medium">156</span> conversations
+
+                  <div className="p-4 border rounded-lg bg-gray-50">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-medium">E-commerce Store</h3>
+                      <Badge className="bg-green-100 text-green-800">
+                        Active
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-2">+1234567891</p>
+                    <div className="text-sm">
+                      <span className="font-medium">89</span> conversations
+                    </div>
+                  </div>
+
+                  <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                    <Button
+                      className="h-full w-full flex-col gap-2"
+                      onClick={() => navigate("/kb-editor")}
+                    >
+                      <Plus className="h-8 w-8 text-gray-400" />
+                      <span className="text-gray-500">Add Business</span>
+                    </Button>
                   </div>
                 </div>
-
-                <div className="p-4 border rounded-lg bg-gray-50">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-medium">E-commerce Store</h3>
-                    <Badge className="bg-green-100 text-green-800">
-                      Active
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">+1234567891</p>
-                  <div className="text-sm">
-                    <span className="font-medium">89</span> conversations
-                  </div>
-                </div>
-
-                <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
-                  <Button className="h-full w-full flex-col gap-2"
-                  onClick={() => navigate("/kb-editor")}>
-                    <Plus className="h-8 w-8 text-gray-400" />
-                    <span className="text-gray-500">Add Business</span>
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
-    </div>
-  )
-}
+    );
+  }
 };
 
 export default Dashboard;
