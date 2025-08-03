@@ -36,7 +36,7 @@ import {
   Add as Plus,
 } from "@mui/icons-material";
 // import ChatIcon from '@mui/icons-material/Chat';
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 interface DashboardProps {
@@ -113,7 +113,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
   //   (b) => b.status === "active"
   // ).length;
 
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
   // return (
   //   <div className=" mx-auto flex justify-center w-[90%]">
@@ -585,7 +585,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
         <div className="bg-white border border-gray-200 shadow-sm mb-12">
           {/* Create New Bot */}
           <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent>
+            <CardContent onClick={() => navigate("/kb-editor")}>
               <div className="flex items-center gap-2">
                 <Plus className="h-5 w-5 text-blue-600" />
                 Create New Bot
@@ -595,7 +595,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
               </div>
             </CardContent>
             <CardContent className="space-y-4">
-              <Button className="w-full">
+              <Button className="w-full" onClick={() => navigate("/kb-editor")}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add New Business
               </Button>
@@ -641,7 +641,8 @@ const Dashboard: React.FC<DashboardProps> = () => {
                 </div>
 
                 <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
-                  <Button className="h-full w-full flex-col gap-2">
+                  <Button className="h-full w-full flex-col gap-2"
+                  onClick={() => navigate("/kb-editor")}>
                     <Plus className="h-8 w-8 text-gray-400" />
                     <span className="text-gray-500">Add Business</span>
                   </Button>
