@@ -2,7 +2,7 @@ import express from 'express'
 import dotenv from 'dotenv'
 import webhookRoutes from './webhook.ts' // ✅ Make sure `.ts` is included if you're using ESM
 
-dotenv.config()
+dotenv.config({ quiet: true });
 
 const app = express()
 const PORT = process.env.PORT || 3000
