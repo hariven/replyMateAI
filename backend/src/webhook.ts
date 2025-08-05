@@ -116,7 +116,11 @@ router.post('/save-knowledge', async (req: Request, res: Response) => {
         const business = insertRes.rows[0]
 
         await saveKnowledgeWithEmbedding(business.id, content)
-        return res.status(200).send('Knowledge base saved with embeddings')
+        return res.status(200).json({
+            id: business.id,
+            name: business.name,
+            whatsapp_number: business.whatsapp_number
+        })
     } catch (err) {
         console.error('❌ Error saving knowledge:', err)
         return res.status(500).send('Internal server error')

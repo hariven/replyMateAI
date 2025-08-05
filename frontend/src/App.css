@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+.whatsapp-bg {
+  background-color: #e5ddd5;
+  background-image: url("data:image/svg+xml,%3Csvg width='256' height='256' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d1c6b4' fill-opacity='0.4'%3E%3Cpath d='M32 48a8 8 0 110-16 8 8 0 010 16zM64 96a8 8 0 110-16 8 8 0 010 16zM96 144a8 8 0 110-16 8 8 0 010 16zM128 192a8 8 0 110-16 8 8 0 010 16z'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
 /* #root {
   max-width: 1280px;
   margin: 0 auto;
