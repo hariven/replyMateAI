@@ -13,5 +13,5 @@
   "ts-node": {
     "esm": true
   },
-  "include": ["src/*"]
+  "include": ["src/*", "src/routes/webhook.ts", "src/routes/business.ts"]
 } 

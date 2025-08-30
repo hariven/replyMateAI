@@ -6,7 +6,7 @@
   "scripts": {
     "d": "nodemon --watch src --ext ts --exec \"tsx ./src/index.ts\"",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "mx": "node --loader ts-node/esm src/_migrations/createKbEmbedTable.ts"
+    "mx": "node --loader ts-node/esm src/_migrations/makeUserIdUnique.ts"
   },
   "keywords": [],
   "author": "",
@@ -15,9 +15,11 @@
   "dependencies": {
     "apollo-server-express": "^3.13.0",
     "axios": "^1.10.0",
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "graphql": "^16.11.0",
+    "jsonwebtoken": "^9.0.2",
     "nodemon": "^3.1.10",
     "openai": "^5.9.0",
     "pg": "^8.16.3",
@@ -25,6 +27,7 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/pg": "^8.15.4",
     "tsx": "^4.20.3"
   }

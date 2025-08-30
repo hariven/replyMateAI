@@ -123,10 +123,16 @@ import {
 import { useNavigate } from "react-router-dom"
 
 interface KnowledgeEditorProps {
-  onNavigate: (page: "dashboard" | "kb-editor", data?: any) => void
+  // onNavigate: (page: "dashboard" | "kb-editor", data?: any) => void;
+  initialBusinessData?: { // New prop for editing existing business
+    id: string;
+    name: string;
+    whatsapp_number: string;
+    content: string;
+  };
 }
 
-const KnowledgeEditor: React.FC<KnowledgeEditorProps> = ({ onNavigate }) => {
+const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
   const [businessName, setBusinessName] = useState("")
   const [content, setContent] = useState("")
   const [status, setStatus] = useState("")
@@ -142,9 +148,13 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = ({ onNavigate }) => {
     }
     setStatus("Saving...");
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch("/api/save-knowledge", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`  // ✅ Include token
+        },
         body: JSON.stringify({
           name: businessName,
           whatsapp_number: whatsappNumber,
@@ -156,7 +166,7 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = ({ onNavigate }) => {
         setStatus("✅ Saved successfully");
         setContent("");
         // Redirect to dashboard with new business info
-        navigate("/", { state: { newBusiness: savedBusiness } });
+        navigate("/dashboard", { state: { newBusiness: savedBusiness } });
       } else {
         const err = await res.text();
         setStatus(`❌ Error: ${err}`);
@@ -168,9 +178,7 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = ({ onNavigate }) => {
 
   const handleBack = () => {
     console.log("Back button clicked")
-    if (onNavigate) {
-      onNavigate("dashboard")
-    }
+    navigate(-1) // Navigate back to the previous page
   }
 
   const sampleQuestions = [

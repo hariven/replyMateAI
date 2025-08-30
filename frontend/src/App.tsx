@@ -3,8 +3,12 @@
 // import viteLogo from '/vite.svg'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import './App.css'
-import Dashboard from './_components/Dashboard'
 import KnowledgeEditor from './_components/kb'
+import Signup from './_components/Signup'
+import Login from './_components/Login'
+import PublicDashboard from './_components/PublicDashboard'
+import PrivateRoute from './_components/PrivateRoute'
+import PrivateDashboard from './_components/PrivateDashboard'
 
 function App() {
   // const [count, setCount] = useState(0)
@@ -12,10 +16,26 @@ function App() {
   return (
     <BrowserRouter>
     <Routes>
-      <Route path='/' element={<Dashboard onBusinessSelect={() => {}} />} />
-      {/* <KnowledgeEditor /> */}
-      <Route path='/kb-editor' element={<KnowledgeEditor />} />
-    </Routes>
+        {/* Dashboard */}
+        <Route path="/" element={<PublicDashboard />} />
+
+        {/* Private Dashboard */}
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <PrivateDashboard />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Auth Pages */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+
+        {/* Knowledge Base Editor */}
+        <Route path="/kb-editor" element={<KnowledgeEditor />} />
+      </Routes>
     </BrowserRouter>
   )
 }

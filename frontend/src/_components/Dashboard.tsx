@@ -841,24 +841,24 @@
 //             </Button>
 //           </div>
 
-//           <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
-//             <div className="text-center">
-//               <div className="text-3xl font-bold text-[#25D366]">10,000+</div>
-//               <div className="text-gray-600">Businesses Connected</div>
-//             </div>
-//             <div className="text-center">
-//               <div className="text-3xl font-bold text-green-700">95%</div>
-//               <div className="text-gray-600">Average Response Rate</div>
-//             </div>
-//             <div className="text-center">
-//               <div className="text-3xl font-bold text-green-700">24/7</div>
-//               <div className="text-gray-600">Automated Support</div>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     );
-//   }
+  //         <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
+  //           <div className="text-center">
+  //             <div className="text-3xl font-bold text-[#25D366]">10,000+</div>
+  //             <div className="text-gray-600">Businesses Connected</div>
+  //           </div>
+  //           <div className="text-center">
+  //             <div className="text-3xl font-bold text-green-700">95%</div>
+  //             <div className="text-gray-600">Average Response Rate</div>
+  //           </div>
+  //           <div className="text-center">
+  //             <div className="text-3xl font-bold text-green-700">24/7</div>
+  //             <div className="text-gray-600">Automated Support</div>
+  //           </div>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
 //   // Logged in dashboard
 //   return (
@@ -975,13 +975,546 @@
 
 
 
-"use client"
+// "use client"
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { Card, CardContent, Badge } from "@mui/material"
+// import type React from "react"
+// import { useState, useEffect } from "react"
+// import { Card, CardContent, Badge } from "@mui/material"
+// import {
+//   TrendingUp,
+//   Person,
+//   X,
+//   Chat as ChatIcon,
+//   Login as LogIn,
+//   Add as Plus,
+//   Menu,
+//   Phone,
+//   Message,
+//   Analytics,
+//   Settings,
+//   CheckCircle,
+//   Schedule,
+// } from "@mui/icons-material"
+// import { useLocation, useNavigate } from "react-router-dom"
+// import Signup from "./Signup"
+// import Login from "./Login"
+// import KnowledgeEditor from "./kb"
+
+// interface DashboardProps {
+//   // onBusinessSelect: (businessId: string) => void
+//   // onNavigate: (page: "dashboard" | "kb-editor", data?: any) => void
+//   newBusiness?: Business
+// }
+
+// interface Business {
+//   id: string
+//   name: string
+//   whatsapp_number: string
+// }
+
+// type Page = "login" | "signup" | "dashboard" | "kb-editor"
+
+// const Dashboard: React.FC<DashboardProps> = () => {
+
+//   const location = useLocation();
+//   const [isMenuOpen, setIsMenuOpen] = useState(false)
+//   const [isLoggedIn, setIsLoggedIn] = useState(false)
+//   const [businesses, setBusinesses] = useState<Business[]>([])
+//   const [currentPage, setCurrentPage] = useState<Page>("dashboard")
+//   const [editingBusiness, setEditingBusiness] = useState<any>(null);
+
+//   const connectedBusinesses = businesses.length
+//   const responseRate = 94
+
+//   const navigateTo = (page: Page, data?: any) => {
+//     console.log("Navigating to:", page, "with data:", data)
+//     setCurrentPage(page)
+//     if (page === "kb-editor" && data) {
+//       setEditingBusiness(data); // Set business for editing
+//     } else {
+//       setEditingBusiness(null); // Clear editing state if not editing
+//     }
+
+//     if (page === "dashboard" && data) {
+//       setBusinesses(data) // This data could be a new or updated business
+//     } else {
+//       setBusinesses([]); // Clear new business state if not coming from KB editor
+//     }
+//   }
+
+//   useEffect(() => {
+//     fetch("/api/businesses")
+//       .then((res) => res.json())
+//       .then((data) => setBusinesses(data))
+//       .catch((err) => console.error("Failed to fetch businesses:", err));
+//   }, []);
+
+//   useEffect(() => {
+//     if (location.state?.newBusiness) {
+//       setBusinesses((prev) => [...prev, location.state.newBusiness]);
+//     }
+//   }, [location.state]);
+
+//   const navigate = useNavigate();
+
+//   const handleAddBusiness = () => {
+//     console.log("Add business clicked")
+//     // if kb saved successfully
+//     navigate("/kb-editor")
+//   }
+
+//   const handleLogin = () => {
+//     // setIsLoggedIn(true)
+//     setCurrentPage("login")
+//     if (currentPage === "login") {
+//       setIsLoggedIn(true)
+//     }
+//   }
+
+//   const handleSignup = () => {
+//     setIsLoggedIn(true)
+//     setCurrentPage("dashboard")
+//   }
+
+//   const handleLogout = () => {
+//     // if (!isLoggedIn) return;
+//     // if (currentPage === "dashboard" && isLoggedIn) {
+//       setIsLoggedIn(false)
+//       setCurrentPage("dashboard")
+//     // }
+//     // setBusinesses([])
+//     // setEditingBusiness(null)
+//   }
+
+//   // Floating WhatsApp Icons Animation
+//   const FloatingIcons = () => (
+//     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+//       {[...Array(15)].map((_, i) => (
+//         <div
+//           key={i}
+//           className="absolute animate-float opacity-10"
+//           style={{
+//             top: `${Math.random() * 100}%`,
+//             left: `${Math.random() * 100}%`,
+//             animationDelay: `${i * 0.8}s`,
+//             animationDuration: `${4 + Math.random() * 2}s`,
+//           }}
+//         >
+//           <div className="w-8 h-8 bg-[#25D366] rounded-full flex items-center justify-center">
+//             <ChatIcon className="w-5 h-5 text-white" />
+//           </div>
+//         </div>
+//       ))}
+//     </div>
+//   )
+
+//   if (!isLoggedIn) {
+//     return (
+//       <div className="relative min-h-screen bg-gradient-to-br from-[#075E54] via-[#128C7E] to-[#25D366] overflow-hidden">
+//         <FloatingIcons />
+
+//         {currentPage === "login" && (
+//         <Login 
+//           onNavigate={navigateTo} 
+//           onLogin={handleLogin}
+//         />
+//       )}
+      
+//       {currentPage === "signup" && (
+//         <Signup 
+//           // onNavigate={navigateTo} 
+//           // onSignup={handleSignup}
+//         />
+//       )}
+
+// {currentPage === "kb-editor" && isLoggedIn && (
+//         <KnowledgeEditor 
+//           // onNavigate={navigateTo} 
+//           initialBusinessData={editingBusiness} // Pass the business data for editing
+//         />
+//       )}
+
+//        {currentPage === "dashboard"  && (
+//         <div>
+//          {/* Navigation */}
+//          <nav className="relative z-20 bg-white/95 backdrop-blur-lg border-b border-white/20 shadow-lg">
+//          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+//            <div className="flex justify-between items-center h-14 sm:h-16">
+//              <div className="flex items-center space-x-2 sm:space-x-3">
+//                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg">
+//                  <ChatIcon className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+//                </div>
+//                <div>
+//                  <span className="text-lg sm:text-xl font-bold text-[#075E54]">ReplyMate AI</span>
+//                  <div className="text-xs text-gray-500 hidden sm:block">WhatsApp Business Integration</div>
+//                </div>
+//              </div>
+
+//              <div className="hidden lg:flex items-center space-x-4 xl:space-x-6">
+//                <button className="text-[#075E54] hover:text-[#25D366] font-medium px-3 py-2 text-sm xl:text-base">
+//                  Features
+//                </button>
+//                <button className="text-[#075E54] hover:text-[#25D366] font-medium px-3 py-2 text-sm xl:text-base">
+//                  Pricing
+//                </button>
+//                <button className="text-[#075E54] hover:text-[#25D366] font-medium px-3 py-2 text-sm xl:text-base">
+//                  About
+//                </button>
+//                <button
+//                  className="flex items-center gap-2 text-[#075E54] border border-[#25D366] rounded-full px-3 py-2 xl:px-4 hover:bg-[#25D366] hover:text-white transition-all text-sm xl:text-base"
+//                  onClick={handleLogin}
+//                >
+//                  <LogIn className="h-3 w-3 xl:h-4 xl:w-4" />
+//                  Login
+//                </button>
+//                <button className="flex items-center gap-2 bg-[#25D366] text-white rounded-full px-4 py-2 xl:px-6 hover:bg-[#128C7E] transition-all shadow-lg text-sm xl:text-base">
+//                  Get Started Free
+//                </button>
+//              </div>
+
+//              <div className="lg:hidden">
+//                <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 touch-manipulation">
+//                  {isMenuOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <Menu className="h-5 w-5 sm:h-6 sm:w-6" />}
+//                </button>
+//              </div>
+//            </div>
+//          </div>
+
+//          {isMenuOpen && (
+//            <div className="lg:hidden bg-white/95 backdrop-blur-lg border-t border-white/20">
+//              <div className="px-3 sm:px-4 py-4 space-y-2">
+//                <button className="w-full text-left text-[#075E54] py-3 px-4 rounded-lg hover:bg-gray-50 touch-manipulation">
+//                  Features
+//                </button>
+//                <button className="w-full text-left text-[#075E54] py-3 px-4 rounded-lg hover:bg-gray-50 touch-manipulation">
+//                  Pricing
+//                </button>
+//                <button className="w-full text-left text-[#075E54] py-3 px-4 rounded-lg hover:bg-gray-50 touch-manipulation">
+//                  About
+//                </button>
+//                <button
+//                  className="w-full text-left gap-2 border border-[#25D366] rounded-full py-3 px-4 flex items-center touch-manipulation"
+//                  onClick={handleLogin}
+//                >
+//                  <LogIn className="h-4 w-4" /> Login
+//                </button>
+//                <button className="w-full text-left gap-2 bg-[#25D366] text-white rounded-full py-3 px-4 flex items-center touch-manipulation">
+//                  Get Started Free
+//                </button>
+//              </div>
+//            </div>
+//          )}
+//        </nav>
+
+//        {/* Hero Section */}
+//        <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-10 sm:py-16 lg:py-20 text-center">
+//          <div className="mb-6 sm:mb-8">
+//            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-3 py-2 sm:px-4 text-white mb-4 sm:mb-6">
+//              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-[#25D366]" />
+//              <span className="text-xs sm:text-sm font-medium">Trusted by 10,000+ businesses</span>
+//            </div>
+//          </div>
+
+//          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 sm:mb-6 leading-tight">
+//            Transform Your
+//            <span className="block text-[#25D366] drop-shadow-lg">WhatsApp Business</span>
+//            <span className="block">with AI Power</span>
+//          </h1>
+
+//          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 mb-8 sm:mb-10 lg:mb-12 max-w-4xl mx-auto leading-relaxed px-4">
+//            Automate customer conversations, boost response rates by 300%, and grow your business with intelligent
+//            WhatsApp bots that understand your customers perfectly.
+//          </p>
+
+//          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-10 sm:mb-12 lg:mb-16 px-4">
+//            <button
+//              className="text-base sm:text-lg px-6 py-3 sm:px-8 sm:py-4 bg-[#25D366] text-white rounded-full shadow-2xl hover:bg-[#128C7E] transition-all transform hover:scale-105 flex items-center gap-3 justify-center touch-manipulation"
+//              onClick={handleLogin}
+//            >
+//              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-white rounded-full flex items-center justify-center">
+//                <ChatIcon className="w-3 h-3 sm:w-4 sm:h-4 text-[#25D366]" />
+//              </div>
+//              <span className="whitespace-nowrap">Start Free Trial - No Credit Card</span>
+//            </button>
+//            <button className="text-base sm:text-lg px-6 py-3 sm:px-8 sm:py-4 border-2 border-white text-white rounded-full hover:bg-white hover:text-[#075E54] transition-all touch-manipulation">
+//              Watch 2-Min Demo
+//            </button>
+//          </div>
+
+//          {/* Stats Cards */}
+//          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-4xl mx-auto px-4">
+//            <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20">
+//              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2">10,000+</div>
+//              <div className="text-sm sm:text-base text-white/80">Businesses Connected</div>
+//              <div className="text-[#25D366] text-xs sm:text-sm mt-1 sm:mt-2">↗ Growing daily</div>
+//            </div>
+//            <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20">
+//              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2">95%</div>
+//              <div className="text-sm sm:text-base text-white/80">Average Response Rate</div>
+//              <div className="text-[#25D366] text-xs sm:text-sm mt-1 sm:mt-2">↗ 3x industry average</div>
+//            </div>
+//            <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20 sm:col-span-2 lg:col-span-1">
+//              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2">24/7</div>
+//              <div className="text-sm sm:text-base text-white/80">Automated Support</div>
+//              <div className="text-[#25D366] text-xs sm:text-sm mt-1 sm:mt-2">↗ Never miss a customer</div>
+//            </div>
+//          </div>
+//        </div>
+
+//        {/* Features Preview */}
+//        <div className="relative z-10 bg-white/5 backdrop-blur-sm py-12 sm:py-16 lg:py-20">
+//          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+//            <div className="text-center mb-10 sm:mb-12 lg:mb-16">
+//              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 sm:mb-4">
+//                Why Choose ReplyMate AI?
+//              </h2>
+//              <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto px-4">
+//                Built specifically for WhatsApp Business with enterprise-grade AI
+//              </p>
+//            </div>
+
+//            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+//              {[
+//                { icon: ChatIcon, title: "Smart Conversations", desc: "AI understands context and intent" },
+//                { icon: Schedule, title: "24/7 Availability", desc: "Never miss a customer inquiry" },
+//                { icon: Analytics, title: "Deep Analytics", desc: "Track performance and optimize" },
+//                { icon: Settings, title: "Easy Setup", desc: "Connect in under 5 minutes" },
+//              ].map((feature, i) => (
+//                <div
+//                  key={i}
+//                  className="bg-white/10 backdrop-blur-lg rounded-lg sm:rounded-xl p-4 sm:p-6 border border-white/20 hover:bg-white/20 transition-all"
+//                >
+//                  <feature.icon className="w-6 h-6 sm:w-8 sm:h-8 text-[#25D366] mb-3 sm:mb-4" />
+//                  <h3 className="text-base sm:text-lg font-semibold text-white mb-1 sm:mb-2">{feature.title}</h3>
+//                  <p className="text-white/70 text-xs sm:text-sm">{feature.desc}</p>
+//                </div>
+//              ))}
+//            </div>
+//          </div>
+//        </div>
+//        </div>
+//        )}
+//       </div>
+//     )
+//   }
+
+//   // Logged-in Dashboard
+//   return (
+//     <div className="min-h-screen bg-gradient-to-br from-[#075E54] via-[#128C7E] to-[#25D366]">
+//       <FloatingIcons />
+
+//       {/* Navigation */}
+//       <nav className="relative z-20 bg-white/95 backdrop-blur-lg border-b border-white/20 shadow-lg">
+//         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 flex justify-between items-center h-14 sm:h-16">
+//           <div className="flex items-center space-x-2 sm:space-x-3">
+//             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg">
+//               <ChatIcon className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+//             </div>
+//             <div>
+//               <span className="text-lg sm:text-xl font-bold text-[#075E54]">ReplyMate AI</span>
+//               <div className="text-xs text-gray-500 hidden sm:block">Dashboard</div>
+//             </div>
+//           </div>
+//           <div className="flex items-center space-x-2 sm:space-x-4">
+//             <div className="w-6 h-6 sm:w-8 sm:h-8 bg-[#25D366] rounded-full flex items-center justify-center">
+//               <Person className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
+//             </div>
+//             <button
+//               onClick={handleLogout}
+//               className="text-[#075E54] hover:text-[#25D366] font-medium px-2 py-1 sm:px-4 sm:py-2 text-sm sm:text-base touch-manipulation"
+//             >
+//               Logout
+//             </button>
+//           </div>
+//         </div>
+//       </nav>
+
+//       <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
+//         {/* Welcome Section */}
+//         <div className="mb-6 sm:mb-8">
+//           <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 border border-white/20">
+//             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 sm:mb-3">
+//               Welcome back, John! 👋
+//             </h1>
+//             <p className="text-white/80 text-sm sm:text-base lg:text-lg">
+//               Your WhatsApp AI assistants are working hard. Here's today's overview.
+//             </p>
+//           </div>
+//         </div>
+
+//         {/* Key Metrics */}
+//         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-10 lg:mb-12">
+//           <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-xl hover:shadow-2xl transition-all">
+//             <CardContent className="p-4 sm:p-6">
+//               <div className="flex items-center justify-between mb-3 sm:mb-4">
+//                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#25D366]/10 rounded-full flex items-center justify-center">
+//                   <ChatIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#25D366]" />
+//                 </div>
+//                 <Badge className="bg-green-100 text-green-800 text-xs">Active</Badge>
+//               </div>
+//               <div className="text-2xl sm:text-3xl font-bold text-[#075E54] mb-1">{connectedBusinesses}</div>
+//               <div className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">Connected Businesses</div>
+//               <div className="flex items-center">
+//                 <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-[#25D366] mr-1" />
+//                 <span className="text-xs sm:text-sm text-[#25D366] font-medium">+1 this month</span>
+//               </div>
+//             </CardContent>
+//           </Card>
+
+//           <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-xl hover:shadow-2xl transition-all">
+//             <CardContent className="p-4 sm:p-6">
+//               <div className="flex items-center justify-between mb-3 sm:mb-4">
+//                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center">
+//                   <Analytics className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+//                 </div>
+//                 <Badge className="bg-blue-100 text-blue-800 text-xs">Excellent</Badge>
+//               </div>
+//               <div className="text-2xl sm:text-3xl font-bold text-[#075E54] mb-1">{responseRate}%</div>
+//               <div className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">Response Rate</div>
+//               <div className="flex items-center">
+//                 <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-[#25D366] mr-1" />
+//                 <span className="text-xs sm:text-sm text-[#25D366] font-medium">+3% this week</span>
+//               </div>
+//             </CardContent>
+//           </Card>
+
+//           <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-xl hover:shadow-2xl transition-all">
+//             <CardContent className="p-4 sm:p-6">
+//               <div className="flex items-center justify-between mb-3 sm:mb-4">
+//                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center">
+//                   <Message className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+//                 </div>
+//                 <Badge className="bg-purple-100 text-purple-800 text-xs">Today</Badge>
+//               </div>
+//               <div className="text-2xl sm:text-3xl font-bold text-[#075E54] mb-1">247</div>
+//               <div className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">Messages Handled</div>
+//               <div className="flex items-center">
+//                 <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-[#25D366] mr-1" />
+//                 <span className="text-xs sm:text-sm text-[#25D366] font-medium">+15% vs yesterday</span>
+//               </div>
+//             </CardContent>
+//           </Card>
+
+//           <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-xl hover:shadow-2xl transition-all">
+//             <CardContent className="p-4 sm:p-6">
+//               <div className="flex items-center justify-between mb-3 sm:mb-4">
+//                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-full flex items-center justify-center">
+//                   <Schedule className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
+//                 </div>
+//                 <Badge className="bg-orange-100 text-orange-800 text-xs">Avg</Badge>
+//               </div>
+//               <div className="text-2xl sm:text-3xl font-bold text-[#075E54] mb-1">1.2s</div>
+//               <div className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">Response Time</div>
+//               <div className="flex items-center">
+//                 <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-[#25D366] mr-1" />
+//                 <span className="text-xs sm:text-sm text-[#25D366] font-medium">Lightning fast</span>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+
+//         {/* Your Businesses */}
+//         <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-xl">
+//           <CardContent className="p-4 sm:p-6 lg:p-8">
+//             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-4">
+//               <div>
+//                 <h2 className="text-xl sm:text-2xl font-bold text-[#075E54] mb-1 sm:mb-2">Your WhatsApp Businesses</h2>
+//                 <p className="text-gray-600 text-sm sm:text-base">Manage and monitor your AI-powered business bots</p>
+//               </div>
+//               <button
+//                 onClick={handleAddBusiness}
+//                 className="bg-[#25D366] text-white rounded-full px-4 py-2 sm:px-6 sm:py-3 hover:bg-[#128C7E] transition-all shadow-lg flex items-center gap-2 justify-center sm:justify-start touch-manipulation text-sm sm:text-base"
+//               >
+//                 <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+//                 Add Business
+//               </button>
+//             </div>
+
+//             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+//               {businesses.map((biz, i) => (
+//                 <div
+//                   key={`${biz.id}-${i}`}
+//                   className="group p-4 sm:p-6 border-2 border-gray-100 rounded-xl sm:rounded-2xl bg-gradient-to-br from-white to-gray-50 hover:border-[#25D366] hover:shadow-xl transition-all duration-300 cursor-pointer touch-manipulation"
+//                 >
+//                   <div className="flex items-center justify-between mb-3 sm:mb-4">
+//                     <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+//                       <ChatIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+//                     </div>
+//                     <Badge className="bg-green-100 text-green-800 border border-green-200 text-xs">
+//                       <CheckCircle className="w-2 h-2 sm:w-3 sm:h-3 mr-1" />
+//                       Active
+//                     </Badge>
+//                   </div>
+
+//                   <h3 className="text-base sm:text-lg font-bold text-[#075E54] mb-2 group-hover:text-[#25D366] transition-colors">
+//                     {biz.name}
+//                   </h3>
+
+//                   <div className="flex items-center gap-2 text-gray-600 mb-3 sm:mb-4">
+//                     <Phone className="w-3 h-3 sm:w-4 sm:h-4" />
+//                     <span className="text-xs sm:text-sm">{biz.whatsapp_number}</span>
+//                   </div>
+
+//                   <div className="grid grid-cols-2 gap-3 sm:gap-4 text-center">
+//                     <div className="bg-blue-50 rounded-lg p-2 sm:p-3">
+//                       <div className="text-lg sm:text-xl font-bold text-blue-600">0</div>
+//                       <div className="text-xs text-gray-600">Conversations</div>
+//                     </div>
+//                     <div className="bg-green-50 rounded-lg p-2 sm:p-3">
+//                       <div className="text-lg sm:text-xl font-bold text-green-600">100%</div>
+//                       <div className="text-xs text-gray-600">Uptime</div>
+//                     </div>
+//                   </div>
+
+//                   <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100">
+//                     <div className="flex items-center justify-between text-xs sm:text-sm">
+//                       <span className="text-gray-500">Last active:</span>
+//                       <span className="text-[#25D366] font-medium">Just now</span>
+//                     </div>
+//                   </div>
+//                 </div>
+//               ))}
+
+//               {/* Add Business Card */}
+//               <div
+//                 onClick={handleAddBusiness}
+//                 className="group p-4 sm:p-6 border-2 border-dashed border-gray-300 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center text-center hover:border-[#25D366] hover:bg-[#25D366]/5 transition-all duration-300 cursor-pointer min-h-[200px] sm:min-h-[280px] touch-manipulation"
+//               >
+//                 <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3 sm:mb-4 group-hover:bg-[#25D366] group-hover:scale-110 transition-all">
+//                   <Plus className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 group-hover:text-white" />
+//                 </div>
+//                 <h3 className="text-base sm:text-lg font-semibold text-gray-600 group-hover:text-[#25D366] mb-1 sm:mb-2">
+//                   Connect New Business
+//                 </h3>
+//                 <p className="text-xs sm:text-sm text-gray-500 group-hover:text-gray-600">
+//                   Set up WhatsApp AI in under 5 minutes
+//                 </p>
+//               </div>
+//             </div>
+//           </CardContent>
+//         </Card>
+//       </div>
+//     </div>
+//   )
+// }
+
+// export default Dashboard
+
+
+
+
+
+
+
+
+
+"use client";
+
+import type React from "react";
+import { useState, useEffect } from "react";
+import { Badge } from "@mui/material";
 import {
-  TrendingUp,
+  // TrendingUp,
   Person,
   X,
   Chat as ChatIcon,
@@ -989,35 +1522,25 @@ import {
   Add as Plus,
   Menu,
   Phone,
-  Message,
+  // Message,
   Analytics,
   Settings,
   CheckCircle,
   Schedule,
-} from "@mui/icons-material"
-import { useLocation, useNavigate } from "react-router-dom"
-
-interface DashboardProps {
-  onBusinessSelect: (businessId: string) => void
-  onNavigate: (page: "dashboard" | "kb-editor", data?: any) => void
-  newBusiness?: Business
-}
+} from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
 interface Business {
-  id: string
-  name: string
-  whatsapp_number: string
+  id: string;
+  name: string;
+  whatsapp_number: string;
 }
 
-const Dashboard: React.FC<DashboardProps> = () => {
-
-  const location = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [businesses, setBusinesses] = useState<Business[]>([])
-
-  const connectedBusinesses = businesses.length
-  const responseRate = 94
+const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
 
   useEffect(() => {
     fetch("/api/businesses")
@@ -1026,31 +1549,11 @@ const Dashboard: React.FC<DashboardProps> = () => {
       .catch((err) => console.error("Failed to fetch businesses:", err));
   }, []);
 
-  useEffect(() => {
-    if (location.state?.newBusiness) {
-      setBusinesses((prev) => [...prev, location.state.newBusiness]);
-    }
-  }, [location.state]);
+  const handleLoginClick = () => navigate("/login");
+  const handleSignupClick = () => navigate("/signup");
+  const handleAddBusiness = () => navigate("/kb-editor");
+  const handleLogout = () => setIsLoggedIn(false);
 
-  const navigate = useNavigate();
-
-  const handleAddBusiness = () => {
-    console.log("Add business clicked")
-    // if kb saved successfully
-    navigate("/kb-editor")
-  }
-
-  const handleLogin = () => {
-    console.log("Login clicked")
-    setIsLoggedIn(true)
-  }
-
-  const handleLogout = () => {
-    console.log("Logout clicked")
-    setIsLoggedIn(false)
-  }
-
-  // Floating WhatsApp Icons Animation
   const FloatingIcons = () => (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       {[...Array(15)].map((_, i) => (
@@ -1070,7 +1573,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
         </div>
       ))}
     </div>
-  )
+  );
 
   if (!isLoggedIn) {
     return (
@@ -1087,35 +1590,47 @@ const Dashboard: React.FC<DashboardProps> = () => {
                 </div>
                 <div>
                   <span className="text-lg sm:text-xl font-bold text-[#075E54]">ReplyMate AI</span>
-                  <div className="text-xs text-gray-500 hidden sm:block">WhatsApp Business Integration</div>
+                  <div className="text-xs text-gray-500 hidden sm:block">
+                    WhatsApp Business Integration
+                  </div>
                 </div>
               </div>
 
               <div className="hidden lg:flex items-center space-x-4 xl:space-x-6">
-                <button className="text-[#075E54] hover:text-[#25D366] font-medium px-3 py-2 text-sm xl:text-base">
+                <button className="text-[#075E54] hover:text-[#25D366] font-medium px-3 py-2">
                   Features
                 </button>
-                <button className="text-[#075E54] hover:text-[#25D366] font-medium px-3 py-2 text-sm xl:text-base">
+                <button className="text-[#075E54] hover:text-[#25D366] font-medium px-3 py-2">
                   Pricing
                 </button>
-                <button className="text-[#075E54] hover:text-[#25D366] font-medium px-3 py-2 text-sm xl:text-base">
+                <button className="text-[#075E54] hover:text-[#25D366] font-medium px-3 py-2">
                   About
                 </button>
                 <button
-                  className="flex items-center gap-2 text-[#075E54] border border-[#25D366] rounded-full px-3 py-2 xl:px-4 hover:bg-[#25D366] hover:text-white transition-all text-sm xl:text-base"
-                  onClick={handleLogin}
+                  className="flex items-center gap-2 text-[#075E54] border border-[#25D366] rounded-full px-3 py-2 hover:bg-[#25D366] hover:text-white transition-all"
+                  onClick={handleLoginClick}
                 >
-                  <LogIn className="h-3 w-3 xl:h-4 xl:w-4" />
+                  <LogIn className="h-3 w-3" />
                   Login
                 </button>
-                <button className="flex items-center gap-2 bg-[#25D366] text-white rounded-full px-4 py-2 xl:px-6 hover:bg-[#128C7E] transition-all shadow-lg text-sm xl:text-base">
+                <button
+                  className="flex items-center gap-2 bg-[#25D366] text-white rounded-full px-4 py-2 hover:bg-[#128C7E] transition-all shadow-lg"
+                  onClick={handleSignupClick}
+                >
                   Get Started Free
                 </button>
               </div>
 
               <div className="lg:hidden">
-                <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 touch-manipulation">
-                  {isMenuOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <Menu className="h-5 w-5 sm:h-6 sm:w-6" />}
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="p-2 touch-manipulation"
+                >
+                  {isMenuOpen ? (
+                    <X className="h-5 w-5 sm:h-6 sm:w-6" />
+                  ) : (
+                    <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
+                  )}
                 </button>
               </div>
             </div>
@@ -1124,22 +1639,25 @@ const Dashboard: React.FC<DashboardProps> = () => {
           {isMenuOpen && (
             <div className="lg:hidden bg-white/95 backdrop-blur-lg border-t border-white/20">
               <div className="px-3 sm:px-4 py-4 space-y-2">
-                <button className="w-full text-left text-[#075E54] py-3 px-4 rounded-lg hover:bg-gray-50 touch-manipulation">
+                <button className="w-full text-left text-[#075E54] py-3 px-4 rounded-lg hover:bg-gray-50">
                   Features
                 </button>
-                <button className="w-full text-left text-[#075E54] py-3 px-4 rounded-lg hover:bg-gray-50 touch-manipulation">
+                <button className="w-full text-left text-[#075E54] py-3 px-4 rounded-lg hover:bg-gray-50">
                   Pricing
                 </button>
-                <button className="w-full text-left text-[#075E54] py-3 px-4 rounded-lg hover:bg-gray-50 touch-manipulation">
+                <button className="w-full text-left text-[#075E54] py-3 px-4 rounded-lg hover:bg-gray-50">
                   About
                 </button>
                 <button
-                  className="w-full text-left gap-2 border border-[#25D366] rounded-full py-3 px-4 flex items-center touch-manipulation"
-                  onClick={handleLogin}
+                  className="w-full text-left gap-2 border border-[#25D366] rounded-full py-3 px-4 flex items-center"
+                  onClick={handleLoginClick}
                 >
                   <LogIn className="h-4 w-4" /> Login
                 </button>
-                <button className="w-full text-left gap-2 bg-[#25D366] text-white rounded-full py-3 px-4 flex items-center touch-manipulation">
+                <button
+                  className="w-full text-left gap-2 bg-[#25D366] text-white rounded-full py-3 px-4 flex items-center"
+                  onClick={handleSignupClick}
+                >
                   Get Started Free
                 </button>
               </div>
@@ -1148,101 +1666,81 @@ const Dashboard: React.FC<DashboardProps> = () => {
         </nav>
 
         {/* Hero Section */}
-        <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-10 sm:py-16 lg:py-20 text-center">
-          <div className="mb-6 sm:mb-8">
-            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-3 py-2 sm:px-4 text-white mb-4 sm:mb-6">
-              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-[#25D366]" />
-              <span className="text-xs sm:text-sm font-medium">Trusted by 10,000+ businesses</span>
-            </div>
-          </div>
-
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 sm:mb-6 leading-tight">
-            Transform Your
-            <span className="block text-[#25D366] drop-shadow-lg">WhatsApp Business</span>
-            <span className="block">with AI Power</span>
+        <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-10 sm:py-16 text-center">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
+            Transform Your <span className="text-[#25D366]">WhatsApp Business</span> with AI Power
           </h1>
-
-          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 mb-8 sm:mb-10 lg:mb-12 max-w-4xl mx-auto leading-relaxed px-4">
-            Automate customer conversations, boost response rates by 300%, and grow your business with intelligent
-            WhatsApp bots that understand your customers perfectly.
+          <p className="text-lg text-white/80 max-w-3xl mx-auto mb-6">
+            Automate customer conversations, boost response rates, and grow your business with intelligent WhatsApp bots.
           </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-10 sm:mb-12 lg:mb-16 px-4">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              className="text-base sm:text-lg px-6 py-3 sm:px-8 sm:py-4 bg-[#25D366] text-white rounded-full shadow-2xl hover:bg-[#128C7E] transition-all transform hover:scale-105 flex items-center gap-3 justify-center touch-manipulation"
-              onClick={handleLogin}
+              className="bg-[#25D366] text-white px-6 py-3 rounded-full shadow-lg hover:bg-[#128C7E] transition"
+              onClick={handleLoginClick}
             >
-              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-white rounded-full flex items-center justify-center">
-                <ChatIcon className="w-3 h-3 sm:w-4 sm:h-4 text-[#25D366]" />
-              </div>
-              <span className="whitespace-nowrap">Start Free Trial - No Credit Card</span>
+              Start Free Trial
             </button>
-            <button className="text-base sm:text-lg px-6 py-3 sm:px-8 sm:py-4 border-2 border-white text-white rounded-full hover:bg-white hover:text-[#075E54] transition-all touch-manipulation">
-              Watch 2-Min Demo
+            <button className="border border-white text-white px-6 py-3 rounded-full hover:bg-white hover:text-[#075E54] transition">
+              Watch Demo
             </button>
           </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-4xl mx-auto px-4">
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20">
-              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2">10,000+</div>
-              <div className="text-sm sm:text-base text-white/80">Businesses Connected</div>
-              <div className="text-[#25D366] text-xs sm:text-sm mt-1 sm:mt-2">↗ Growing daily</div>
+          <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-[#25D366]">10,000+</div>
+              <div className="text-gray-600">Businesses Connected</div>
             </div>
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20">
-              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2">95%</div>
-              <div className="text-sm sm:text-base text-white/80">Average Response Rate</div>
-              <div className="text-[#25D366] text-xs sm:text-sm mt-1 sm:mt-2">↗ 3x industry average</div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-green-700">95%</div>
+              <div className="text-gray-600">Average Response Rate</div>
             </div>
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20 sm:col-span-2 lg:col-span-1">
-              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2">24/7</div>
-              <div className="text-sm sm:text-base text-white/80">Automated Support</div>
-              <div className="text-[#25D366] text-xs sm:text-sm mt-1 sm:mt-2">↗ Never miss a customer</div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-green-700">24/7</div>
+              <div className="text-gray-600">Automated Support</div>
             </div>
           </div>
         </div>
+
 
         {/* Features Preview */}
-        <div className="relative z-10 bg-white/5 backdrop-blur-sm py-12 sm:py-16 lg:py-20">
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-            <div className="text-center mb-10 sm:mb-12 lg:mb-16">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 sm:mb-4">
-                Why Choose ReplyMate AI?
-              </h2>
-              <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto px-4">
-                Built specifically for WhatsApp Business with enterprise-grade AI
-              </p>
-            </div>
+       <div className="relative z-10 bg-white/5 backdrop-blur-sm py-12 sm:py-16 lg:py-20">
+         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+           <div className="text-center mb-10 sm:mb-12 lg:mb-16">
+             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 sm:mb-4">
+               Why Choose ReplyMate AI?
+             </h2>
+             <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto px-4">
+               Built specifically for WhatsApp Business with enterprise-grade AI
+             </p>
+           </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-              {[
-                { icon: ChatIcon, title: "Smart Conversations", desc: "AI understands context and intent" },
-                { icon: Schedule, title: "24/7 Availability", desc: "Never miss a customer inquiry" },
-                { icon: Analytics, title: "Deep Analytics", desc: "Track performance and optimize" },
-                { icon: Settings, title: "Easy Setup", desc: "Connect in under 5 minutes" },
-              ].map((feature, i) => (
-                <div
-                  key={i}
-                  className="bg-white/10 backdrop-blur-lg rounded-lg sm:rounded-xl p-4 sm:p-6 border border-white/20 hover:bg-white/20 transition-all"
-                >
-                  <feature.icon className="w-6 h-6 sm:w-8 sm:h-8 text-[#25D366] mb-3 sm:mb-4" />
-                  <h3 className="text-base sm:text-lg font-semibold text-white mb-1 sm:mb-2">{feature.title}</h3>
-                  <p className="text-white/70 text-xs sm:text-sm">{feature.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+             {[
+               { icon: ChatIcon, title: "Smart Conversations", desc: "AI understands context and intent" },
+               { icon: Schedule, title: "24/7 Availability", desc: "Never miss a customer inquiry" },
+               { icon: Analytics, title: "Deep Analytics", desc: "Track performance and optimize" },
+               { icon: Settings, title: "Easy Setup", desc: "Connect in under 5 minutes" },
+             ].map((feature, i) => (
+               <div
+                 key={i}
+                 className="bg-white/10 backdrop-blur-lg rounded-lg sm:rounded-xl p-4 sm:p-6 border border-white/20 hover:bg-white/20 transition-all"
+               >
+                 <feature.icon className="w-6 h-6 sm:w-8 sm:h-8 text-[#25D366] mb-3 sm:mb-4" />
+                 <h3 className="text-base sm:text-lg font-semibold text-white mb-1 sm:mb-2">{feature.title}</h3>
+                 <p className="text-white/70 text-xs sm:text-sm">{feature.desc}</p>
+               </div>
+             ))}
+           </div>
+         </div>
+       </div>
       </div>
-    )
+    );
   }
 
-  // Logged-in Dashboard
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#075E54] via-[#128C7E] to-[#25D366]">
       <FloatingIcons />
 
-      {/* Navigation */}
+      {/* Nav */}
       <nav className="relative z-20 bg-white/95 backdrop-blur-lg border-b border-white/20 shadow-lg">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 flex justify-between items-center h-14 sm:h-16">
           <div className="flex items-center space-x-2 sm:space-x-3">
@@ -1260,7 +1758,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
             </div>
             <button
               onClick={handleLogout}
-              className="text-[#075E54] hover:text-[#25D366] font-medium px-2 py-1 sm:px-4 sm:py-2 text-sm sm:text-base touch-manipulation"
+              className="text-[#075E54] hover:text-[#25D366] font-medium px-2 py-1 sm:px-4 sm:py-2"
             >
               Logout
             </button>
@@ -1268,173 +1766,79 @@ const Dashboard: React.FC<DashboardProps> = () => {
         </div>
       </nav>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
-        {/* Welcome Section */}
-        <div className="mb-6 sm:mb-8">
-          <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 border border-white/20">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 sm:mb-3">
-              Welcome back, John! 👋
-            </h1>
-            <p className="text-white/80 text-sm sm:text-base lg:text-lg">
-              Your WhatsApp AI assistants are working hard. Here's today's overview.
+      {/* Businesses */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <h2 className="text-2xl font-bold text-white mb-6">Your WhatsApp Businesses</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {businesses.map((biz, i) => (
+            <div
+              key={`${biz.id}-${i}`}
+              className="group p-4 sm:p-6 border-2 border-gray-100 rounded-xl sm:rounded-2xl bg-gradient-to-br from-white to-gray-50 hover:border-[#25D366] hover:shadow-xl transition-all duration-300 touch-manipulation"
+            >
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                  <ChatIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <Badge className="bg-green-100 text-green-800 border border-green-200 text-xs">
+                  <CheckCircle className="w-2 h-2 sm:w-3 sm:h-3 mr-1" />
+                  Active
+                </Badge>
+              </div>
+
+              <h3 className="text-base sm:text-lg font-bold text-[#075E54] mb-2 group-hover:text-[#25D366] transition-colors">
+                {biz.name}
+              </h3>
+
+              <div className="flex items-center gap-2 text-gray-600 mb-3 sm:mb-4">
+                <Phone className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm">{biz.whatsapp_number}</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 text-center">
+                <div className="bg-blue-50 rounded-lg p-2 sm:p-3">
+                  <div className="text-lg sm:text-xl font-bold text-blue-600">0</div>
+                  <div className="text-xs text-gray-600">Conversations</div>
+                </div>
+                <div className="bg-green-50 rounded-lg p-2 sm:p-3">
+                  <div className="text-lg sm:text-xl font-bold text-green-600">100%</div>
+                  <div className="text-xs text-gray-600">Uptime</div>
+                </div>
+              </div>
+
+              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100 flex justify-between items-center">
+                <div className="flex flex-col text-xs sm:text-sm">
+                  <span className="text-gray-500">Last active:</span>
+                  <span className="text-[#25D366] font-medium">Just now</span>
+                </div>
+                <button
+                  onClick={() => navigate(`/kb-editor/${biz.id}`, { state: { business: biz } })}
+                  className="px-3 py-1 bg-[#25D366] text-white rounded-full text-xs sm:text-sm hover:bg-[#128C7E] transition"
+                >
+                  Edit
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {/* Add Business Card */}
+          <div
+            onClick={handleAddBusiness}
+            className="group p-4 sm:p-6 border-2 border-dashed border-gray-300 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center text-center hover:border-[#25D366] hover:bg-[#25D366]/5 transition-all duration-300 cursor-pointer min-h-[200px] sm:min-h-[280px] touch-manipulation"
+          >
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3 sm:mb-4 group-hover:bg-[#25D366] group-hover:scale-110 transition-all">
+              <Plus className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 group-hover:text-white" />
+            </div>
+            <h3 className="text-base sm:text-lg font-semibold text-gray-600 group-hover:text-[#25D366] mb-1 sm:mb-2">
+              Connect New Business
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-500 group-hover:text-gray-600">
+              Set up WhatsApp AI in under 5 minutes
             </p>
           </div>
         </div>
-
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-10 lg:mb-12">
-          <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-xl hover:shadow-2xl transition-all">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#25D366]/10 rounded-full flex items-center justify-center">
-                  <ChatIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#25D366]" />
-                </div>
-                <Badge className="bg-green-100 text-green-800 text-xs">Active</Badge>
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold text-[#075E54] mb-1">{connectedBusinesses}</div>
-              <div className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">Connected Businesses</div>
-              <div className="flex items-center">
-                <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-[#25D366] mr-1" />
-                <span className="text-xs sm:text-sm text-[#25D366] font-medium">+1 this month</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-xl hover:shadow-2xl transition-all">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Analytics className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
-                </div>
-                <Badge className="bg-blue-100 text-blue-800 text-xs">Excellent</Badge>
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold text-[#075E54] mb-1">{responseRate}%</div>
-              <div className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">Response Rate</div>
-              <div className="flex items-center">
-                <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-[#25D366] mr-1" />
-                <span className="text-xs sm:text-sm text-[#25D366] font-medium">+3% this week</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-xl hover:shadow-2xl transition-all">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Message className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
-                </div>
-                <Badge className="bg-purple-100 text-purple-800 text-xs">Today</Badge>
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold text-[#075E54] mb-1">247</div>
-              <div className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">Messages Handled</div>
-              <div className="flex items-center">
-                <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-[#25D366] mr-1" />
-                <span className="text-xs sm:text-sm text-[#25D366] font-medium">+15% vs yesterday</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-xl hover:shadow-2xl transition-all">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                  <Schedule className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
-                </div>
-                <Badge className="bg-orange-100 text-orange-800 text-xs">Avg</Badge>
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold text-[#075E54] mb-1">1.2s</div>
-              <div className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">Response Time</div>
-              <div className="flex items-center">
-                <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-[#25D366] mr-1" />
-                <span className="text-xs sm:text-sm text-[#25D366] font-medium">Lightning fast</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Your Businesses */}
-        <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-xl">
-          <CardContent className="p-4 sm:p-6 lg:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-4">
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-[#075E54] mb-1 sm:mb-2">Your WhatsApp Businesses</h2>
-                <p className="text-gray-600 text-sm sm:text-base">Manage and monitor your AI-powered business bots</p>
-              </div>
-              <button
-                onClick={handleAddBusiness}
-                className="bg-[#25D366] text-white rounded-full px-4 py-2 sm:px-6 sm:py-3 hover:bg-[#128C7E] transition-all shadow-lg flex items-center gap-2 justify-center sm:justify-start touch-manipulation text-sm sm:text-base"
-              >
-                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-                Add Business
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {businesses.map((biz, i) => (
-                <div
-                  key={`${biz.id}-${i}`}
-                  className="group p-4 sm:p-6 border-2 border-gray-100 rounded-xl sm:rounded-2xl bg-gradient-to-br from-white to-gray-50 hover:border-[#25D366] hover:shadow-xl transition-all duration-300 cursor-pointer touch-manipulation"
-                >
-                  <div className="flex items-center justify-between mb-3 sm:mb-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                      <ChatIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                    </div>
-                    <Badge className="bg-green-100 text-green-800 border border-green-200 text-xs">
-                      <CheckCircle className="w-2 h-2 sm:w-3 sm:h-3 mr-1" />
-                      Active
-                    </Badge>
-                  </div>
-
-                  <h3 className="text-base sm:text-lg font-bold text-[#075E54] mb-2 group-hover:text-[#25D366] transition-colors">
-                    {biz.name}
-                  </h3>
-
-                  <div className="flex items-center gap-2 text-gray-600 mb-3 sm:mb-4">
-                    <Phone className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="text-xs sm:text-sm">{biz.whatsapp_number}</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 sm:gap-4 text-center">
-                    <div className="bg-blue-50 rounded-lg p-2 sm:p-3">
-                      <div className="text-lg sm:text-xl font-bold text-blue-600">0</div>
-                      <div className="text-xs text-gray-600">Conversations</div>
-                    </div>
-                    <div className="bg-green-50 rounded-lg p-2 sm:p-3">
-                      <div className="text-lg sm:text-xl font-bold text-green-600">100%</div>
-                      <div className="text-xs text-gray-600">Uptime</div>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100">
-                    <div className="flex items-center justify-between text-xs sm:text-sm">
-                      <span className="text-gray-500">Last active:</span>
-                      <span className="text-[#25D366] font-medium">Just now</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {/* Add Business Card */}
-              <div
-                onClick={handleAddBusiness}
-                className="group p-4 sm:p-6 border-2 border-dashed border-gray-300 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center text-center hover:border-[#25D366] hover:bg-[#25D366]/5 transition-all duration-300 cursor-pointer min-h-[200px] sm:min-h-[280px] touch-manipulation"
-              >
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3 sm:mb-4 group-hover:bg-[#25D366] group-hover:scale-110 transition-all">
-                  <Plus className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 group-hover:text-white" />
-                </div>
-                <h3 className="text-base sm:text-lg font-semibold text-gray-600 group-hover:text-[#25D366] mb-1 sm:mb-2">
-                  Connect New Business
-                </h3>
-                <p className="text-xs sm:text-sm text-gray-500 group-hover:text-gray-600">
-                  Set up WhatsApp AI in under 5 minutes
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;
