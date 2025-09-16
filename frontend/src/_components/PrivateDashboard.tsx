@@ -35,6 +35,12 @@ useEffect(() => {
           throw new Error("Failed to fetch businesses");
         }
         const data = await response.json();
+
+        if (response.status === 401) {
+          localStorage.removeItem("token");
+          navigate("/");
+          return;
+        }
         setBusinesses(data);
       } catch (error) {
         console.error("Error fetching businesses:", error);
@@ -42,7 +48,7 @@ useEffect(() => {
     };
 
     fetchBusinesses();
-  }, []);
+  }, [navigate]);
 
   const handleLogout = () => {
     // Clear auth tokens / state
