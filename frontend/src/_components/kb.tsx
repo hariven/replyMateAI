@@ -119,7 +119,10 @@ import {
   Info,
   Lightbulb,
   Business,
+  Delete,
+  // Description,
 } from "@mui/icons-material"
+import ImageIcon from '@mui/icons-material/Image';
 import { useNavigate } from "react-router-dom"
 
 interface KnowledgeEditorProps {
@@ -132,14 +135,52 @@ interface KnowledgeEditorProps {
   };
 }
 
+interface ImageData {
+  file: File
+  preview: string
+  description: string
+}
+
 const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
   const [businessName, setBusinessName] = useState("")
   const [content, setContent] = useState("")
   const [status, setStatus] = useState("")
   const [whatsappNumber, setWhatsappNumber] = useState("")
   const [isPreviewMode, setIsPreviewMode] = useState(false)
+   // 🔹 Image state
+   const [images, setImages] = useState<ImageData[]>([])
+  //  const [imagePreviews, setImagePreviews] = useState<string[]>([])
 
   const navigate = useNavigate()
+
+  //  // Handle image select + preview
+  //  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const files = e.target.files ? Array.from(e.target.files) : []
+  // const newImages = files.map((file) => ({ file, description: "" }))
+  // setImages((prev) => [...prev, ...newImages.map(img => img.file)])
+  // const previews = files.map((file) => URL.createObjectURL(file))
+  // setImagePreviews((prev) => [...prev, ...previews])
+  // }
+
+   // Handle image select
+   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : []
+    const newImages = files.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+      description: ""
+    }))
+    setImages((prev) => [...prev, ...newImages])
+  }
+
+   // Update description
+   const updateDescription = (index: number, desc: string) => {
+    setImages((prev) =>
+      prev.map((img, i) =>
+        i === index ? { ...img, description: desc } : img
+      )
+    )
+  }
 
   const handleSubmit = async () => {
     if (!businessName || !whatsappNumber || !content) {
@@ -161,8 +202,8 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
           content,
         }),
       });
+      const savedBusiness = await res.json();
       if (res.ok) {
-        const savedBusiness = await res.json();
         setStatus("✅ Saved successfully");
         setContent("");
         // Redirect to dashboard with new business info
@@ -171,6 +212,25 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
         const err = await res.text();
         setStatus(`❌ Error: ${err}`);
       }
+      
+      // Upload each image + description
+      for (const img of images) {
+        const formData = new FormData()
+        formData.append("businessId", savedBusiness.id)
+        formData.append("description", img.description)
+        formData.append("image", img.file)
+
+        await fetch("/api/save-image", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        })
+      }
+
+      setStatus("✅ Saved successfully")
+      setContent("")
+      setImages([])
+      navigate("/dashboard", { state: { newBusiness: savedBusiness } })
     } catch (err) {
       setStatus(`❌ ${err}`);
     }
@@ -179,6 +239,12 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
   const handleBack = () => {
     console.log("Back button clicked")
     navigate(-1) // Navigate back to the previous page
+  }
+
+  // Remove image before saving
+  const removeImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index))
+    // setImagePreviews((prev) => prev.filter((_, i) => i !== index))
   }
 
   const sampleQuestions = [
@@ -334,6 +400,47 @@ The more details you provide, the better your AI will assist customers!"
                     </div>
                   </div>
                 </div>
+
+                {/* 🔹 Image Upload Section */}
+        <div className="space-y-2 sm:space-y-3">
+          <label className="flex items-center gap-2 text-base sm:text-lg font-semibold text-[#075E54]">
+            <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+            Upload Business Images
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleImageChange}
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 
+                       file:rounded-full file:border-0 file:text-sm file:font-semibold 
+                       file:bg-[#25D366]/10 file:text-[#075E54] hover:file:bg-[#25D366]/20"
+          />
+
+          {/* 🔹 Preview Selected Images */}
+          {images.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-3">
+              {images.map((src, i) => (
+                <div key={i} className="relative group">
+                  <img src={src?.preview} alt={`Preview ${i}`} className="rounded-lg border shadow-sm" />
+                  <input
+                  type="text"
+                  placeholder="Short description for AI retrieval"
+                  value={src?.description}
+                  onChange={(e) => updateDescription(i, e.target.value)}
+                  className="w-full border rounded p-2 text-sm"
+                />
+                  <button
+                    onClick={() => removeImage(i)}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-80 hover:opacity-100"
+                  >
+                    <Delete className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          </div>
 
                 {/* Action Buttons */}
                 <div className="flex flex-col gap-4 pt-4 sm:pt-6 border-t border-gray-200">

@@ -23,6 +23,26 @@ export const saveKnowledgeWithEmbedding = async (businessId: string, content: st
     console.log('Knowledge base embedding saved successfully.');
 };
 
+// --- Save image knowledge (label + description + url + embedding) ---
+export const saveImageWithEmbedding = async (
+    businessId: string,
+    // label: string,
+    description: string,
+    url: string
+) => {
+    const embeddingText = `${description}`;
+    const embedding = await getEmbedding(embeddingText);
+    const vectorString = `[${embedding.join(",")}]`;
+
+    await pool.query(
+        `INSERT INTO business_images (business_id, description, image_url, embedding)
+       VALUES ($1, $2, $3, $4)`,
+        [businessId, description, url, vectorString]
+    );
+
+    console.log("✅ Image knowledge embedding saved.");
+};
+
 // --- Generate OpenAI embedding ---
 async function getEmbedding(text: string): Promise<number[]> {
     const response = await client.embeddings.create({

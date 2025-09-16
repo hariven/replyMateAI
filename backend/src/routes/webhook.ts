@@ -165,14 +165,15 @@
 
 
 import express, { Request, Response } from 'express'
-import { sendWhatsAppMessage } from '../services/whatsapp.ts'
+import { sendWhatsAppImage, sendWhatsAppMessage } from '../services/whatsapp.ts'
 import { getAIReply } from '../services/openai.ts'
 import { pool } from '../db.ts'
-import { saveKnowledgeWithEmbedding } from '../services/embedding.ts'
-import { getRelevantKnowledge } from '../services/retrieval.ts'
+import { saveImageWithEmbedding, saveKnowledgeWithEmbedding } from '../services/embedding.ts'
+import { getRelevantImage, getRelevantKnowledge } from '../services/retrieval.ts'
 import { addMessageToMemory, getUserMemory } from '../memory.ts'
 import jwt from "jsonwebtoken"
 import { authenticate, AuthRequest } from '../middleware/authenticate.ts'
+import multer from 'multer'
 
 const router = express.Router()
 
@@ -245,25 +246,38 @@ router.post('/webhook', async (req: Request, res: Response) => {
         const knowledgeArray = await getRelevantKnowledge(business.user_id, business.id, userText, 'cosine')
         const knowledge = knowledgeArray.map(k => k.content).join("\n\n")
 
+        // ✅ Step 4: Retrieve relevant IMAGE knowledge
+        const imageMatch = await getRelevantImage(business.id, userText)
+
         console.log('knowledge', knowledge)
-        if (!knowledge) {
+        if (!knowledge && !imageMatch) {
+            // ✅ Step 4: Retrieve relevant IMAGE knowledge
+            // const imageMatch = await getRelevantImage(business.id, userText)
             await sendWhatsAppMessage(from, 'No knowledge base found for this business.')
             return res.sendStatus(200)
         }
 
-        // ✅ Step 4: Generate AI response
-        const aiReply = await getAIReply(knowledge, userText, business, from)
+        // ✅ Step 5: Generate AI response
+        const aiReply = await getAIReply(knowledge, userText, business, from, imageMatch)
 
-        // ✅ Step 5: Avoid duplicate greetings
-        if (!isFirstMessage && aiReply.includes('How can I help you today')) {
+        // ✅ Step 6: Avoid duplicate greetings
+        if (!isFirstMessage && aiReply.text.includes('How can I help you today')) {
             console.log('Skipping duplicate greeting for returning user.')
         } else {
-            await sendWhatsAppMessage(from, aiReply)
+            await sendWhatsAppMessage(from, aiReply?.text)
+        }
+
+        console.log('imageMatch -', imageMatch)
+
+        // ✅ Step 7: If image found, send it after reply
+        if (imageMatch) {
+            console.log(`📷 Sending image: ${imageMatch?.description} -> ${imageMatch.url}`)
+            await sendWhatsAppImage(from, imageMatch.url)
         }
 
         // ✅ Step 6: Save chat to memory
         addMessageToMemory(from, 'user', userText)
-        addMessageToMemory(from, 'assistant', aiReply)
+        addMessageToMemory(from, 'assistant', aiReply?.text || '')
 
         return res.sendStatus(200)
     } catch (err) {
@@ -306,5 +320,59 @@ router.post(
         }
     }
 );
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+import cloudinary from "../services/cloudinary.ts";
+import streamifier from "streamifier";
+
+
+// ✅ Save image knowledge for a business
+router.post("/save-image", authenticate, upload.single("image"),
+    async (req: AuthRequest, res: Response) => {
+        try {
+            const user_id = req.user!.userId;
+            const { businessId, description } = req.body;
+
+            if (!businessId || !description) {
+                return res.status(400).send("Missing params");
+            }
+
+            // Validate business belongs to user
+            const { rows: businesses } = await pool.query(
+                "SELECT * FROM business WHERE id = $1 AND user_id = $2",
+                [businessId, user_id]
+            );
+            if (!businesses.length) {
+                return res.status(403).send("Not authorized for this business");
+            }
+
+            // ✅ Upload image to Cloudinary
+            const uploadResult: any = await new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    {
+                        folder: `business_${businessId}`,
+                        use_filename: true,
+                        unique_filename: true,
+                    },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result);
+                    }
+                );
+                streamifier.createReadStream(req.file.buffer).pipe(stream);
+            });
+
+            await saveImageWithEmbedding(businessId, description, uploadResult?.secure_url);
+            return res.status(200).json({
+                message: "✅ Image saved",
+                url: uploadResult.secure_url,
+                public_id: uploadResult.public_id
+            });
+        } catch (err) {
+            console.error("❌ Error saving image:", err);
+            return res.status(500).send("Internal server error");
+        }
+    });
 
 export default router

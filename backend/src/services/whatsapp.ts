@@ -26,3 +26,22 @@ export const sendWhatsAppMessage = async (to: string, text: string) => {
         console.error('Error sending WhatsApp message:', err)
     }
 }
+
+export async function sendWhatsAppImage(to: string, imageUrl: string) {
+    await fetch(
+        `https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/messages`,
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                messaging_product: "whatsapp",
+                to,
+                type: "image",
+                image: { link: imageUrl },
+            }),
+        }
+    );
+}

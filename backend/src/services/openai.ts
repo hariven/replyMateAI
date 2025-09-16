@@ -9,7 +9,7 @@ const openai = new OpenAI({
 })
 
 export const getAIReply = async (context: string, userMessage: string, business: { name: string; id: string },
-    userID: string) => {
+    userID: string, imageMatch?: { description: string; url: string }) => {
     // Retrieve memory for user
     const memory = getUserMemory(userID)
 
@@ -88,10 +88,20 @@ Output format:
 - Use natural language, contractions, and a human tone.
 - If your answer naturally covers more than one distinct topic, separate them into different paragraphs with a blank line in between, so they can be shown as separate chat bubbles.
 
+📷 Image Handling:
+- Sometimes you may be provided with an image that relates to the user’s query.
+- The description of this image is: "${imageMatch?.description ?? 'No image available'}".
+- If relevant, you can naturally mention it in your reply (but don’t worry about sending it; the system handles that part).
+- If you think the user would benefit from seeing the image, send it to the user in the response. 
 `.trim()
     // console.log('context', context)
+
+    const imageContext = imageMatch
+        ? `There is an image available: "${imageMatch.description}".`
+        : "No images are available for this query.";
+
     const messages = [
-        { role: "system", content: systemPrompt + `\n\nBusiness Knowledge Base:\n${context}` },
+        { role: "system", content: systemPrompt + `\n\nBusiness Knowledge Base:\n${context}\n\n${imageContext}` },
         ...memory,
         { role: "user", content: userMessage }
     ];
@@ -103,13 +113,16 @@ Output format:
         temperature: 0.5
     })
 
-    const aiReply = completion.choices[0].message?.content ?? 'Sorry, I could not process that.'
+    let aiReply = completion.choices[0].message?.content ?? 'Sorry, I could not process that.'
+
+    // const wantsImage = aiReply.includes('[SEND_IMAGE]')
+    // aiReply = aiReply.replace('[SEND_IMAGE]', '').trim()
 
     // Save this exchange to memory
     addMessageToMemory(userID, "user", userMessage);
     addMessageToMemory(userID, "assistant", aiReply);
 
-    return aiReply;
+    return { text: aiReply }
 }
 
 // export const getAIReply = async (kb: string, userMessage: string, business) => {

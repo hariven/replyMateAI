@@ -23,13 +23,6 @@ const PrivateDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [businesses, setBusinesses] = React.useState<Business[]>([]);
 
-  // Example data — replace with actual fetched business list
-//   const businesses = [
-//     { id: 1, name: "Acme Corp", number: "+1234567890" },
-//     { id: 2, name: "Beta Traders", number: "+1987654321" },
-//     { id: 3, name: "Coffee Co", number: "+1122334455" },
-//   ];
-
 useEffect(() => {
     const fetchBusinesses = async () => {
       try {

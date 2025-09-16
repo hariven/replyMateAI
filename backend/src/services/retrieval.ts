@@ -70,6 +70,40 @@ export async function getRelevantKnowledge(
     return rows
 }
 
+// --- Retrieve relevant image ---
+export const getRelevantImage = async (
+    businessId: string,
+    query: string
+): Promise<{ url: string; description: string } | null> => {
+    const embedding = await getEmbedding(query);
+    const vectorString = `[${embedding.join(',')}]`;
+
+    const { rows } = await pool.query(
+        `
+      SELECT image_url,
+             description,
+             1 - (embedding <=> $2::vector) AS similarity
+      FROM business_images
+      WHERE business_id = $1
+      ORDER BY similarity DESC
+      LIMIT 1
+      `,
+        [businessId, vectorString]
+    );
+
+    if (rows.length > 0 && rows[0].similarity > 0.60) {
+        // only return if similarity is good
+        return {
+            url: rows[0].image_url,
+            description: rows[0].description
+        };
+    }
+
+    return null; // no good match
+};
+
+
+
 async function getEmbedding(text: string): Promise<number[]> {
     const response = await client.embeddings.create({
         input: text,
