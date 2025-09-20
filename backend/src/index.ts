@@ -1,5 +1,6 @@
 import express from 'express'
 import dotenv from 'dotenv'
+import cors from 'cors'
 import webhookRoutes from './routes/webhook.ts' // ✅ Make sure `.ts` is included if you're using ESM
 import businessRoutes from './routes/business.ts'
 import authRoutes from './routes/auth.ts'
@@ -10,6 +11,9 @@ const app = express()
 const PORT = process.env.PORT || 3000
 
 app.use(express.json()) // Required to parse webhook payload
+
+app.use(express.urlencoded({ extended: true }))
+app.use(cors()) // Enable CORS for all routes
 
 app.get('/health', (_req, res) => {
     const healthStatus = {
