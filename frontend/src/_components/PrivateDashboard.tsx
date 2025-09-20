@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Chat as ChatIcon,
-//   Settings,
+  //   Settings,
   Logout as LogoutIcon,
   Person,
   Badge,
@@ -12,6 +12,7 @@ import {
   Phone,
   Add,
 } from "@mui/icons-material";
+import Button from "@mui/material/Button";
 
 interface KB {
   id: number;
@@ -20,24 +21,24 @@ interface KB {
 }
 
 interface Business {
-    id: number;
-    name: string;
-    whatsapp_number: string;
-    kb? : KB[];
-  }
+  id: number;
+  name: string;
+  whatsapp_number: string;
+  kb?: KB[];
+}
 
 const PrivateDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [businesses, setBusinesses] = React.useState<Business[]>([]);
   const { id } = useParams<{ id: string }>();
 
-useEffect(() => {
+  useEffect(() => {
     const fetchBusinesses = async () => {
       try {
         const response = await fetch("/api/businesses", {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`
-              }
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }); // Replace with your actual API endpoint
         if (!response.ok) {
           throw new Error("Failed to fetch businesses");
@@ -64,13 +65,13 @@ useEffect(() => {
     navigate("/");
   };
 
-//   const handleBusinessClick = (id: number) => {
-//     navigate(`/business/${id}`);
-//   };
+  //   const handleBusinessClick = (id: number) => {
+  //     navigate(`/business/${id}`);
+  //   };
 
-const handleAddBusiness = () => navigate("/kb-editor");
+  const handleAddBusiness = () => navigate("/kb-editor");
 
-console.log(businesses, 'businesses')
+  console.log(businesses, "businesses");
 
   const FloatingIcons = () => (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -105,8 +106,12 @@ console.log(businesses, 'businesses')
               <ChatIcon className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
             </div>
             <div>
-              <span className="text-lg sm:text-xl font-bold text-[#075E54]">ReplyMate AI</span>
-              <div className="text-xs text-gray-500 hidden sm:block">Dashboard</div>
+              <span className="text-lg sm:text-xl font-bold text-[#075E54]">
+                ReplyMate AI
+              </span>
+              <div className="text-xs text-gray-500 hidden sm:block">
+                Dashboard
+              </div>
             </div>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-4">
@@ -117,7 +122,9 @@ console.log(businesses, 'businesses')
               onClick={handleLogout}
               className="text-[#075E54] hover:text-[#25D366] font-medium px-2 py-1 sm:px-4 sm:py-2"
             >
-              {LogoutIcon && <LogoutIcon className="w-4 h-4 sm:w-5 sm:h-5 inline-block mr-1" />}
+              {LogoutIcon && (
+                <LogoutIcon className="w-4 h-4 sm:w-5 sm:h-5 inline-block mr-1" />
+              )}
             </button>
           </div>
         </div>
@@ -125,7 +132,18 @@ console.log(businesses, 'businesses')
 
       {/* Businesses */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <h2 className="text-2xl font-bold text-white mb-6">Your WhatsApp Businesses</h2>
+        <div className="flex mb-6 justify-between items-center">
+          <h2 className="text-2xl font-bold text-white items-center ">
+            Your WhatsApp Businesses
+          </h2>
+          <Button
+            onClick={handleAddBusiness}
+            className="!sm:text-lg !bg-white !text-black p-2 "
+          >
+            <Add className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 group-hover:text-white" />
+            Add New Business
+          </Button>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {businesses.map((biz, i) => (
             <div
@@ -136,19 +154,20 @@ console.log(businesses, 'businesses')
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                   <ChatIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-              <h3 className="text-base sm:text-lg font-bold text-[#075E54] mb-2 group-hover:text-[#25D366] transition-colors">
-                {biz.name}
-              </h3>
+                <h3 className="text-base sm:text-lg font-bold text-[#075E54] mb-2 group-hover:text-[#25D366] transition-colors">
+                  {biz.name}
+                </h3>
                 <Badge className="bg-green-100 text-green-800 border border-green-200 text-xs">
                   <CheckCircle className="w-2 h-2 sm:w-3 sm:h-3 mr-1" />
                   Active
                 </Badge>
               </div>
 
-
               <div className="flex items-center gap-2 text-gray-600 mb-3 sm:mb-4">
                 <Phone className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-xs sm:text-sm">{biz.whatsapp_number}</span>
+                <span className="text-xs sm:text-sm">
+                  {biz.whatsapp_number}
+                </span>
               </div>
 
               {/* <div className="grid grid-cols-2 gap-3 sm:gap-4 text-center">
@@ -168,7 +187,11 @@ console.log(businesses, 'businesses')
                   <span className="text-[#25D366] font-medium">Just now</span>
                 </div>
                 <button
-                  onClick={() => navigate(`/kb-editor/${biz.id}`, { state: { business: biz } })}
+                  onClick={() =>
+                    navigate(`/kb-editor/${biz.id}`, {
+                      state: { business: biz },
+                    })
+                  }
                   className="px-3 py-1 bg-[#25D366] text-white rounded-full text-xs sm:text-sm hover:bg-[#128C7E] transition"
                 >
                   Edit
