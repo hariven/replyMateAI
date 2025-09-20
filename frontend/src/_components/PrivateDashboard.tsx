@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Chat as ChatIcon,
 //   Settings,
@@ -13,15 +13,23 @@ import {
   Add,
 } from "@mui/icons-material";
 
+interface KB {
+  id: number;
+  business_id: number;
+  content: string;
+}
+
 interface Business {
     id: number;
     name: string;
     whatsapp_number: string;
+    kb? : KB[];
   }
 
 const PrivateDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [businesses, setBusinesses] = React.useState<Business[]>([]);
+  const { id } = useParams<{ id: string }>();
 
 useEffect(() => {
     const fetchBusinesses = async () => {
@@ -61,6 +69,8 @@ useEffect(() => {
 //   };
 
 const handleAddBusiness = () => navigate("/kb-editor");
+
+console.log(businesses, 'businesses')
 
   const FloatingIcons = () => (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">

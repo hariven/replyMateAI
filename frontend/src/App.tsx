@@ -35,6 +35,7 @@ function App() {
 
         {/* Knowledge Base Editor */}
         <Route path="/kb-editor" element={<KnowledgeEditor />} />
+        <Route path="/kb-editor/:id" element={<KnowledgeEditor />} />
       </Routes>
     </BrowserRouter>
   )

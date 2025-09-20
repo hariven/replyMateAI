@@ -107,7 +107,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   ArrowBack,
   Chat as ChatIcon,
@@ -123,7 +123,7 @@ import {
   // Description,
 } from "@mui/icons-material"
 import ImageIcon from '@mui/icons-material/Image';
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 
 interface KnowledgeEditorProps {
   // onNavigate: (page: "dashboard" | "kb-editor", data?: any) => void;
@@ -150,8 +150,21 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
    // 🔹 Image state
    const [images, setImages] = useState<ImageData[]>([])
   //  const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const location = useLocation();
+  const initialBusinessData = (location.state as any)?.business;
 
   const navigate = useNavigate()
+
+  console.log("Initial Business Data:", initialBusinessData);
+
+  //  🔹 Prefill form when editing
+   useEffect(() => {
+    if (initialBusinessData) {
+      setBusinessName(initialBusinessData.name || "");
+      setWhatsappNumber(initialBusinessData.whatsapp_number || "");
+      setContent(initialBusinessData.content || "");
+    }
+  }, [initialBusinessData]);
 
   //  // Handle image select + preview
   //  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -182,19 +195,79 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
     )
   }
 
+  // const handleSubmit = async () => {
+
+  //   if (!businessName || !whatsappNumber || !content) {
+  //     setStatus("❌ Please fill all fields");
+  //     return;
+  //   }
+  //   setStatus("Saving...");
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     const isEditMode = !!initialBusinessData?.id;
+
+  //     const res = await fetch(isEditMode ? `/api/businesses/${initialBusinessData.id}` : "/api/save-knowledge", {
+  //       method: isEditMode ? "PUT" : "POST",
+  //       headers: { 
+  //         "Content-Type": "application/json",
+  //         "Authorization": `Bearer ${token}`  // ✅ Include token
+  //       },
+  //       body: JSON.stringify({
+  //         name: businessName,
+  //         whatsapp_number: whatsappNumber,
+  //         content,
+  //       }),
+  //     });
+  //     const savedBusiness = await res.json();
+  //     if (res.ok) {
+  //       setStatus("✅ Saved successfully");
+  //       // setContent("");
+  //       // Redirect to dashboard with new business info
+  //       navigate("/dashboard", { state: { newBusiness: savedBusiness } });
+  //     } else {
+  //       const err = await res.text();
+  //       setStatus(`❌ Error: ${err}`);
+  //     }
+      
+  //     // Upload each image + description
+  //     for (const img of images) {
+  //       const formData = new FormData()
+  //       formData.append("businessId", savedBusiness.id)
+  //       formData.append("description", img.description)
+  //       formData.append("image", img.file)
+
+  //       await fetch("/api/save-image", {
+  //         method: "POST",
+  //         headers: { Authorization: `Bearer ${token}` },
+  //         body: formData,
+  //       })
+  //     }
+
+  //     setStatus("✅ Saved successfully")
+  //     setContent("")
+  //     setImages([])
+  //     navigate("/dashboard", { state: { newBusiness: savedBusiness } })
+  //   } catch (err) {
+  //     setStatus(`❌ ${err}`);
+  //   }
+  // };
+
   const handleSubmit = async () => {
     if (!businessName || !whatsappNumber || !content) {
       setStatus("❌ Please fill all fields");
       return;
     }
+  
     setStatus("Saving...");
+  
     try {
       const token = localStorage.getItem("token");
+  
       const res = await fetch("/api/save-knowledge", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`  // ✅ Include token
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           name: businessName,
@@ -202,35 +275,28 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
           content,
         }),
       });
+  
+      if (!res.ok) throw new Error(await res.text());
+  
       const savedBusiness = await res.json();
-      if (res.ok) {
-        setStatus("✅ Saved successfully");
-        setContent("");
-        // Redirect to dashboard with new business info
-        navigate("/dashboard", { state: { newBusiness: savedBusiness } });
-      } else {
-        const err = await res.text();
-        setStatus(`❌ Error: ${err}`);
-      }
-      
-      // Upload each image + description
+  
+      // ✅ If you also have images to upload:
       for (const img of images) {
-        const formData = new FormData()
-        formData.append("businessId", savedBusiness.id)
-        formData.append("description", img.description)
-        formData.append("image", img.file)
-
+        const formData = new FormData();
+        formData.append("businessId", savedBusiness.id);
+        formData.append("description", img.description);
+        formData.append("image", img.file);
+  
         await fetch("/api/save-image", {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: formData,
-        })
+        });
       }
-
-      setStatus("✅ Saved successfully")
-      setContent("")
-      setImages([])
-      navigate("/dashboard", { state: { newBusiness: savedBusiness } })
+  
+      setStatus("✅ Saved successfully");
+      navigate("/dashboard", { state: { newBusiness: savedBusiness } });
+  
     } catch (err) {
       setStatus(`❌ ${err}`);
     }
@@ -381,15 +447,15 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
                     <textarea
                       placeholder="Tell your AI about your business... 
 
-Examples:
-• Business hours: Monday-Friday 9AM-6PM
-• Services: Math tutoring, Science classes, Exam prep
-• Pricing: $50/hour for individual sessions, $30/hour for group classes
-• Location: 123 Main Street, City Center
-• Special offers: 10% discount for new students
-• Contact: Call us at +60 12-345 6789 for bookings
+                        Examples:
+                        • Business hours: Monday-Friday 9AM-6PM
+                        • Services: Math tutoring, Science classes, Exam prep
+                        • Pricing: $50/hour for individual sessions, $30/hour for group classes
+                        • Location: 123 Main Street, City Center
+                        • Special offers: 10% discount for new students
+                        • Contact: Call us at +60 12-345 6789 for bookings
 
-The more details you provide, the better your AI will assist customers!"
+                        The more details you provide, the better your AI will assist customers!"
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
                       rows={10}

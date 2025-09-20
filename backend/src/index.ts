@@ -11,6 +11,15 @@ const PORT = process.env.PORT || 3000
 
 app.use(express.json()) // Required to parse webhook payload
 
+app.get('/health', (_req, res) => {
+    const healthStatus = {
+        status: true,
+        timestamp: new Date().toISOString(),
+    }
+
+    res.status(200).json(healthStatus)
+})
+
 // ✅ Wire the route
 app.use('/api', webhookRoutes)
 
