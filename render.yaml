@@ -3,7 +3,7 @@ services:
     name: whatsapp-backend
     env: node
     plan: free
-    buildCommand: pnpm install && pnpm run build
+    buildCommand: pnpm install --no-frozen-lockfile && pnpm run build
     startCommand: pnpm d
     envVars:
       # App Port
