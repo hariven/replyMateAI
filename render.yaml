@@ -5,6 +5,7 @@ services:
     plan: free
     buildCommand: pnpm install --no-frozen-lockfile
     startCommand: pnpm start
+    rootDir: backend
     envVars:
       # App Port
       - key: PORT
