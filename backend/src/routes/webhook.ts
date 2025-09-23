@@ -179,6 +179,7 @@ const router = express.Router()
 
 // ✅ Webhook Verification (Meta requirement)
 router.get('/webhook', (req: Request, res: Response) => {
+    console.log("Webhook verification attempt:", req.query);
     const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN
     const mode = req.query['hub.mode']
     const token = req.query['hub.verify_token']
