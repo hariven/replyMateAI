@@ -9,6 +9,7 @@ dotenv.config({ quiet: true });
 
 const app = express()
 const PORT = process.env.PORT || 3000
+const isProd = process.env.NODE_ENV === 'production'
 
 app.use(express.json()) // Required to parse webhook payload
 
@@ -31,6 +32,15 @@ app.use('/api', businessRoutes)
 
 app.use("/api", authRoutes);
 
+// Error handler
+app.use((err, _req, res, _next) => {
+    console.error(err)
+    res.status(500).json({
+        message: 'Internal Server Error',
+        ...(isProd ? {} : { stack: err.stack }), // hide stack in prod
+    })
+})
+
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`)
+    console.log(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`)
 })
