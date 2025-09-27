@@ -32,10 +32,15 @@ const PrivateDashboard: React.FC = () => {
   const [businesses, setBusinesses] = React.useState<Business[]>([]);
   // const { id } = useParams<{ id: string }>();
 
+  const API_BASE =
+    import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !== ""
+      ? import.meta.env.VITE_API_URL
+      : "/api"; // fallback to vite proxy in dev
+
   useEffect(() => {
     const fetchBusinesses = async () => {
       try {
-        const response = await fetch("/api/businesses", {
+        const response = await fetch(`${API_BASE}/businesses`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -57,7 +62,7 @@ const PrivateDashboard: React.FC = () => {
     };
 
     fetchBusinesses();
-  }, [navigate]);
+  }, [API_BASE, navigate]);
 
   const handleLogout = () => {
     // Clear auth tokens / state

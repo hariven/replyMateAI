@@ -617,10 +617,13 @@ const Login: React.FC = () => {
 
     setIsLoading(true);
     setErrors({}); // Clear previous errors
-
+    const API_BASE =
+    import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !== ""
+      ? import.meta.env.VITE_API_URL
+      : "/api"; // fallback to vite proxy in dev
     try {
       // Auto-detect API base or use environment variable
-      const response = await fetch("/api/login", {
+      const response = await fetch(`${API_BASE}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

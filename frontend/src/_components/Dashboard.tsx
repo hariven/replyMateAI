@@ -1542,12 +1542,17 @@ const Dashboard: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [businesses, setBusinesses] = useState<Business[]>([]);
 
+  const API_BASE =
+    import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !== ""
+      ? import.meta.env.VITE_API_URL
+      : "/api"; // fallback to vite proxy in dev
+
   useEffect(() => {
-    fetch("/api/businesses")
+    fetch(`${API_BASE}/businesses`)
       .then((res) => res.json())
       .then((data) => setBusinesses(data))
       .catch((err) => console.error("Failed to fetch businesses:", err));
-  }, []);
+  }, [API_BASE]);
 
   const handleLoginClick = () => navigate("/login");
   const handleSignupClick = () => navigate("/signup");

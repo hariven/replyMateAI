@@ -262,8 +262,13 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
   
     try {
       const token = localStorage.getItem("token");
+
+      const API_BASE =
+    import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !== ""
+      ? import.meta.env.VITE_API_URL
+      : "/api"; // fallback to vite proxy in dev
   
-      const res = await fetch("/api/save-knowledge", {
+      const res = await fetch(`${API_BASE}/save-knowledge`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -286,8 +291,13 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
         formData.append("businessId", savedBusiness.id);
         formData.append("description", img.description);
         formData.append("image", img.file);
+
+        const API_BASE =
+    import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !== ""
+      ? import.meta.env.VITE_API_URL
+      : "/api"; // fallback to vite proxy in dev
   
-        await fetch("/api/save-image", {
+        await fetch(`${API_BASE}/save-image`, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: formData,
