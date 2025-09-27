@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Chat as ChatIcon,
   //   Settings,
@@ -30,7 +30,7 @@ interface Business {
 const PrivateDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [businesses, setBusinesses] = React.useState<Business[]>([]);
-  const { id } = useParams<{ id: string }>();
+  // const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
     const fetchBusinesses = async () => {
