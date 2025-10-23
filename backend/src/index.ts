@@ -14,11 +14,11 @@ const isProd = process.env.NODE_ENV === 'production'
 app.use(express.json()) // Required to parse webhook payload
 
 app.use(express.urlencoded({ extended: true }))
-app.use(cors({
-    origin: ["https://replymateai.netlify.app"], // frontend
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true
-}));
+// app.use(cors({
+//     origin: ["https://replymateai.netlify.app"], // frontend
+//     methods: ["GET", "POST", "PUT", "DELETE"],
+//     credentials: true
+// }));
 
 app.get('/health', (_req, res) => {
     const healthStatus = {

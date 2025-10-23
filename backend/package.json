@@ -6,7 +6,7 @@
   "scripts": {
     "d": "nodemon --watch src --ext ts --exec \"tsx ./src/index.ts\"",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "mx": "node --loader ts-node/esm src/_migrations/addColumnInBImage.ts",
+    "mx": "node --loader ts-node/esm src/_migrations/addConversationTable.ts",
     "start": "tsx ./src/index.ts"
   },
   "keywords": [],

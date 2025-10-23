@@ -32,6 +32,8 @@ const PrivateDashboard: React.FC = () => {
   const [businesses, setBusinesses] = React.useState<Business[]>([]);
   // const { id } = useParams<{ id: string }>();
 
+  console.log(businesses, "businesses");
+
   const API_BASE =
     import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !== ""
       ? import.meta.env.VITE_API_URL
@@ -193,8 +195,10 @@ const PrivateDashboard: React.FC = () => {
                 </div>
                 <button
                   onClick={() =>
-                    navigate(`/kb-editor/${biz.id}`, {
-                      state: { business: biz },
+                    navigate(`/kb-editor`, {
+                      state: { business: biz,
+                        knowledge_base_embeddings: biz.kb, // ✅ pass KB if exists
+                       },
                     })
                   }
                   className="px-3 py-1 bg-[#25D366] text-white rounded-full text-xs sm:text-sm hover:bg-[#128C7E] transition"

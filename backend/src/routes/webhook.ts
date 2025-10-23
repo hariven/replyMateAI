@@ -174,6 +174,7 @@ import { addMessageToMemory, getUserMemory } from '../memory.ts'
 import jwt from "jsonwebtoken"
 import { authenticate, AuthRequest } from '../middleware/authenticate.ts'
 import multer from 'multer'
+import { getConversationContext, saveMessage } from '../services/conversation.ts'
 
 const router = express.Router()
 
@@ -203,10 +204,31 @@ router.post('/webhook', async (req: Request, res: Response) => {
         const userText = message?.text?.body
         const value = changes?.value
 
+        console.log("Webhook payload:", from);
         // if (!message || !from || !to || !userText) {
         //     console.error('❌ Invalid webhook payload:', req.body)
         //     return res.sendStatus(400)
         // }
+
+        // 1️⃣ Save user's message
+
+        // ✅ Step 1: Find business by WhatsApp number
+        const { rows: businesses } = await pool.query(
+            `SELECT * FROM business WHERE whatsapp_number = $1`,
+            [to]
+        )
+
+        const business = businesses[0]
+
+        if (!business) {
+            await sendWhatsAppMessage(from, 'Business not found in the system.')
+            return res.sendStatus(200)
+        }
+
+        await saveMessage(business.user_id, business.id, from, userText, true);
+
+        // 2️⃣ Retrieve past conversation
+        const context = await getConversationContext(business.user_id, business.id, from);
 
         // Handle status updates (delivery/read receipts)
         if (value?.statuses) {
@@ -227,17 +249,19 @@ router.post('/webhook', async (req: Request, res: Response) => {
             return res.sendStatus(200)
         }
 
-        // ✅ Step 1: Find business by WhatsApp number
-        const { rows: businesses } = await pool.query(
-            `SELECT * FROM business WHERE whatsapp_number = $1`,
-            [to]
-        )
-        const business = businesses[0]
 
-        if (!business) {
-            await sendWhatsAppMessage(from, 'Business not found in the system.')
-            return res.sendStatus(200)
+
+        // 4️⃣ Generate reply (simple concat for demo)
+        let reply = `You said: ${userText}`;
+        if (context.length) {
+            reply += `\n\nPrevious conversation:\n`;
+            context.forEach(msg => {
+                const sender = msg.is_user ? 'You' : 'Bot';
+                reply += `${sender}: ${msg.message}\n`;
+            });
         }
+
+
 
         // ✅ Step 2: Check memory (avoid repeating greetings)
         const memory = getUserMemory(from)
@@ -280,6 +304,8 @@ router.post('/webhook', async (req: Request, res: Response) => {
         addMessageToMemory(from, 'user', userText)
         addMessageToMemory(from, 'assistant', aiReply?.text || '')
 
+        await saveMessage(business.user_id, business.id, from, aiReply?.text || '', false);
+
         return res.sendStatus(200)
     } catch (err) {
         console.error('❌ Error handling webhook:', err)
@@ -295,24 +321,49 @@ router.post(
         try {
             const user_id = req.user!.userId; // from middleware
 
-            const { name, whatsapp_number, content } = req.body;
-            if (!whatsapp_number || !content) {
+            const { id, name, whatsapp_number, kb_content } = req.body;
+            if (!whatsapp_number || !kb_content) {
                 return res
                     .status(400)
                     .send("Missing whatsapp_number or content");
             }
 
-            const insertRes = await pool.query(
-                `
-          INSERT INTO business (user_id, name, whatsapp_number)
-          VALUES ($1, $2, $3)
-          RETURNING *
-          `,
-                [user_id, name, whatsapp_number]
-            );
-            const business = insertRes.rows[0];
+            let business;
 
-            await saveKnowledgeWithEmbedding(business.id, content);
+            if (id) {
+                // 🔹 EDIT (update existing)
+                const updateRes = await pool.query(
+                    `UPDATE business
+           SET name = $1, whatsapp_number = $2
+           WHERE id = $3 AND user_id = $4
+           RETURNING *`,
+                    [name, whatsapp_number, id, user_id]
+                );
+
+                if (updateRes.rows.length === 0) {
+                    return res.status(404).send("Business not found or not yours");
+                }
+
+                business = updateRes.rows[0];
+
+                // Clear old knowledge base and re-insert
+                await pool.query(
+                    `DELETE FROM knowledge_base_embeddings WHERE business_id = $1`,
+                    [id]
+                );
+                await saveKnowledgeWithEmbedding(id, kb_content);
+            } else {
+                // 🔹 CREATE (insert new)
+                const insertRes = await pool.query(
+                    `INSERT INTO business (user_id, name, whatsapp_number)
+           VALUES ($1, $2, $3)
+           RETURNING *`,
+                    [user_id, name, whatsapp_number]
+                );
+                business = insertRes.rows[0];
+
+                await saveKnowledgeWithEmbedding(business.id, kb_content);
+            }
 
             return res.status(200).json(business);
         } catch (err) {
@@ -323,7 +374,9 @@ router.post(
 );
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({
+    storage, limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+});
 import cloudinary from "../services/cloudinary.ts";
 import streamifier from "streamifier";
 
@@ -333,7 +386,16 @@ router.post("/save-image", authenticate, upload.single("image"),
     async (req: AuthRequest, res: Response) => {
         try {
             const user_id = req.user!.userId;
-            const { businessId, description } = req.body;
+            const { id, businessId, name, description } = req.body;
+
+            // console.log("Received image save request:", {
+            //     id,
+            //     businessId,
+            //     name,
+            //     description,
+            //     hasFile: !!req.file,
+            // });
+            console.log("File info:", user_id)
 
             if (!businessId || !description) {
                 return res.status(400).send("Missing params");
@@ -347,33 +409,108 @@ router.post("/save-image", authenticate, upload.single("image"),
             if (!businesses.length) {
                 return res.status(403).send("Not authorized for this business");
             }
+            let uploadResult;
 
-            // ✅ Upload image to Cloudinary
-            const uploadResult: any = await new Promise((resolve, reject) => {
-                const stream = cloudinary.uploader.upload_stream(
-                    {
-                        folder: `business_${businessId}`,
-                        use_filename: true,
-                        unique_filename: true,
-                    },
-                    (error, result) => {
-                        if (error) reject(error);
-                        else resolve(result);
-                    }
+            // ✅ If editing, fetch old image (optional: to delete from Cloudinary)
+            if (id) {
+                const { rows: imgs } = await pool.query(
+                    `SELECT * FROM business_images WHERE id = $1 AND business_id = $2`,
+                    [id, businessId]
                 );
-                streamifier.createReadStream(req.file.buffer).pipe(stream);
-            });
+                if (!imgs.length) {
+                    return res.status(404).send("Image not found");
+                }
 
-            await saveImageWithEmbedding(businessId, description, uploadResult?.secure_url);
-            return res.status(200).json({
-                message: "✅ Image saved",
-                url: uploadResult.secure_url,
-                public_id: uploadResult.public_id
-            });
+                // // optional: remove old from cloudinary
+                // if (imgs[0].public_id) {
+                //     await cloudinary.uploader.destroy(imgs[0].public_id);
+                // }
+            }
+
+            // ✅ Upload new image if provided
+            if (req.file) {
+                uploadResult = await new Promise((resolve, reject) => {
+                    const stream = cloudinary.uploader.upload_stream(
+                        {
+                            folder: `business_${name || businessId}`,
+                            use_filename: true,
+                            unique_filename: true,
+                        },
+                        (error, result) => {
+                            if (error) reject(error);
+                            else resolve(result);
+                        }
+                    );
+                    streamifier.createReadStream(req.file.buffer).pipe(stream);
+                });
+            }
+
+            let image;
+            if (id) {
+                // 🔹 EDIT
+                const updateRes = await pool.query(
+                    `UPDATE business_images
+                 SET description = $1,
+                     image_url = $2,
+                     updated_at = NOW()
+                 WHERE id = $3 AND business_id = $4
+                 RETURNING *`,
+                    [
+                        description,
+                        uploadResult?.secure_url || null,
+                        id,
+                        businessId,
+                    ]
+                );
+                image = updateRes.rows[0];
+            } else {
+                //CREATE
+                // ✅ Save embedding (always recompute if description changed)
+                await saveImageWithEmbedding(
+                    businessId,
+                    description,
+                    uploadResult?.secure_url || image.image_url
+                );
+
+                return res.status(200).json({
+                    message: id ? "✅ Image updated" : "✅ Image saved",
+                    image,
+                });
+            }
         } catch (err) {
             console.error("❌ Error saving image:", err);
             return res.status(500).send("Internal server error");
         }
-    });
+    }
+);
+
+// backend
+router.delete("/delete-image/:id", authenticate, async (req: AuthRequest, res: Response) => {
+    try {
+        const user_id = req.user!.userId;
+        const { id } = req.params;
+
+        const { rows: imgs } = await pool.query(
+            `SELECT * FROM business_images bi 
+         JOIN business b ON bi.business_id = b.id
+         WHERE bi.id = $1 AND b.user_id = $2`,
+            [id, user_id]
+        );
+        if (!imgs.length) return res.status(404).send("Image not found");
+
+        // Remove from Cloudinary
+        if (imgs[0].public_id) {
+            await cloudinary.uploader.destroy(imgs[0].public_id);
+        }
+
+        await pool.query(`DELETE FROM business_images WHERE id = $1`, [id]);
+
+        res.json({ message: "✅ Image deleted" });
+    } catch (err) {
+        console.error("❌ Error deleting image:", err);
+        res.status(500).send("Internal server error");
+    }
+});
+
 
 export default router

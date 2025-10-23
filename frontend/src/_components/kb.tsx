@@ -8,36 +8,36 @@
 //   const [whatsappNumber, setWhatsappNumber] = useState("");
 //   const navigate = useNavigate();
 
-  // const handleSubmit = async () => {
-  //   if (!businessName || !whatsappNumber || !content) {
-  //     setStatus("❌ Please fill all fields");
-  //     return;
-  //   }
-  //   setStatus("Saving...");
-  //   try {
-  //     const res = await fetch("/api/save-knowledge", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         name: businessName,
-  //         whatsapp_number: whatsappNumber,
-  //         content,
-  //       }),
-  //     });
-  //     if (res.ok) {
-  //       const savedBusiness = await res.json();
-  //       setStatus("✅ Saved successfully");
-  //       setContent("");
-  //       // Redirect to dashboard with new business info
-  //       navigate("/", { state: { newBusiness: savedBusiness } });
-  //     } else {
-  //       const err = await res.text();
-  //       setStatus(`❌ Error: ${err}`);
-  //     }
-  //   } catch (err) {
-  //     setStatus(`❌ ${err}`);
-  //   }
-  // };
+// const handleSubmit = async () => {
+//   if (!businessName || !whatsappNumber || !content) {
+//     setStatus("❌ Please fill all fields");
+//     return;
+//   }
+//   setStatus("Saving...");
+//   try {
+//     const res = await fetch("/api/save-knowledge", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({
+//         name: businessName,
+//         whatsapp_number: whatsappNumber,
+//         content,
+//       }),
+//     });
+//     if (res.ok) {
+//       const savedBusiness = await res.json();
+//       setStatus("✅ Saved successfully");
+//       setContent("");
+//       // Redirect to dashboard with new business info
+//       navigate("/", { state: { newBusiness: savedBusiness } });
+//     } else {
+//       const err = await res.text();
+//       setStatus(`❌ Error: ${err}`);
+//     }
+//   } catch (err) {
+//     setStatus(`❌ ${err}`);
+//   }
+// };
 
 //   return (
 //     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
@@ -103,11 +103,10 @@
 
 // export default KnowledgeEditor;
 
+"use client";
 
-"use client"
-
-import type React from "react"
-import { useEffect, useState } from "react"
+import type React from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowBack,
   Chat as ChatIcon,
@@ -121,50 +120,96 @@ import {
   Business,
   Delete,
   // Description,
-} from "@mui/icons-material"
-import ImageIcon from '@mui/icons-material/Image';
-import { useLocation, useNavigate } from "react-router-dom"
+} from "@mui/icons-material";
+import ImageIcon from "@mui/icons-material/Image";
+import { useLocation, useNavigate } from "react-router-dom";
 
-interface KnowledgeEditorProps {
-  // onNavigate: (page: "dashboard" | "kb-editor", data?: any) => void;
-  initialBusinessData?: { // New prop for editing existing business
-    id: string;
-    name: string;
-    whatsapp_number: string;
-    content: string;
-  };
+interface KnowledgeEntry {
+  id?: string;
+  content: string;
 }
 
 interface ImageData {
-  file: File
-  preview: string
-  description: string
+  id: string; // for existing images
+  file: File;
+  preview: string;
+  description: string;
+}
+
+interface KnowledgeEditorProps {
+  // onNavigate: (page: "dashboard" | "kb-editor", data?: any) => void;
+  initialBusinessData?: {
+    // New prop for editing existing business
+    id?: string;
+    name: string;
+    whatsapp_number: string;
+    kb_content: KnowledgeEntry[]; // make it an array
+    images: { id: string; url: string; description: string }[]; // existing images
+  };
 }
 
 const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
-  const [businessName, setBusinessName] = useState("")
-  const [content, setContent] = useState("")
-  const [status, setStatus] = useState("")
-  const [whatsappNumber, setWhatsappNumber] = useState("")
-  const [isPreviewMode, setIsPreviewMode] = useState(false)
-   // 🔹 Image state
-   const [images, setImages] = useState<ImageData[]>([])
+  const [businessName, setBusinessName] = useState("");
+  // const [content, setContent] = useState("");
+  const [kbEntries, setKbEntries] = useState<KnowledgeEntry[]>([]);
+  const [kbText, setKbText] = useState("");
+  const [status, setStatus] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  // 🔹 Image state
+  const [images, setImages] = useState<ImageData[]>([]);
   //  const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const location = useLocation();
   const initialBusinessData = (location.state as any)?.business;
+  // const initialKBData = (location.state as any)?.knowledge_base_embeddings;
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   console.log("Initial Business Data:", initialBusinessData);
 
   //  🔹 Prefill form when editing
-   useEffect(() => {
+  useEffect(() => {
     if (initialBusinessData) {
-      setBusinessName(initialBusinessData.name || "");
-      setWhatsappNumber(initialBusinessData.whatsapp_number || "");
-      setContent(initialBusinessData.content || "");
+      setBusinessName(initialBusinessData.name ?? "");
+      setWhatsappNumber(initialBusinessData.whatsapp_number ?? "");
+      setImages(
+        (initialBusinessData.images || []).map(img => ({
+          id: img.id,
+          file: undefined, // no local file for existing images
+          preview: img.image_url, // cloudinary url
+          description: img.description
+        }))
+      );
+      // setImages(
+      //   initialBusinessData.images.map(img => ({
+      //     id: img.id,
+      //     file: null, // no local file
+      //     preview: img.image_url,
+      //     description: img.description
+      //   }))
+      // );
+      
     }
+    const entries = initialBusinessData?.kb ?? [];
+
+    // ✅ sort entries by ID ascending before using
+    const sortedEntries = [...entries].sort((a, b) => a.id - b.id);
+
+    setKbEntries(sortedEntries);
+
+    // stringify with IDs included
+    const kbString = sortedEntries.map((e) => `${e.content}`).join("\n\n");
+
+    setKbText(kbString);
+    // setKbEntries(initialBusinessData.kb_content ?? []); // load array
   }, [initialBusinessData]);
+  //  useEffect(() => {
+  //   if (initialBusinessData || initialKBData) {
+  //     setBusinessName(initialBusinessData.name || "");
+  //     setWhatsappNumber(initialBusinessData.whatsapp_number || "");
+  //     setContent(initialKBData.content || "");
+  //   }
+  // }, [initialBusinessData, initialKBData]);
 
   //  // Handle image select + preview
   //  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -175,25 +220,28 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
   // setImagePreviews((prev) => [...prev, ...previews])
   // }
 
-   // Handle image select
-   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files ? Array.from(e.target.files) : []
+  const API_BASE =
+  import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !== ""
+    ? import.meta.env.VITE_API_URL
+    : "/api"; // fallback to vite proxy in dev
+
+  // Handle image select
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
     const newImages = files.map((file) => ({
       file,
       preview: URL.createObjectURL(file),
-      description: ""
-    }))
-    setImages((prev) => [...prev, ...newImages])
-  }
+      description: "",
+    }));
+    setImages((prev) => [...prev, ...newImages]);
+  };
 
-   // Update description
-   const updateDescription = (index: number, desc: string) => {
+  // Update description
+  const updateDescription = (index: number, desc: string) => {
     setImages((prev) =>
-      prev.map((img, i) =>
-        i === index ? { ...img, description: desc } : img
-      )
-    )
-  }
+      prev.map((img, i) => (i === index ? { ...img, description: desc } : img))
+    );
+  };
 
   // const handleSubmit = async () => {
 
@@ -208,7 +256,7 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
 
   //     const res = await fetch(isEditMode ? `/api/businesses/${initialBusinessData.id}` : "/api/save-knowledge", {
   //       method: isEditMode ? "PUT" : "POST",
-  //       headers: { 
+  //       headers: {
   //         "Content-Type": "application/json",
   //         "Authorization": `Bearer ${token}`  // ✅ Include token
   //       },
@@ -228,7 +276,7 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
   //       const err = await res.text();
   //       setStatus(`❌ Error: ${err}`);
   //     }
-      
+
   //     // Upload each image + description
   //     for (const img of images) {
   //       const formData = new FormData()
@@ -253,82 +301,100 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
   // };
 
   const handleSubmit = async () => {
-    if (!businessName || !whatsappNumber || !content) {
+    if (!businessName || !whatsappNumber || !kbEntries) {
       setStatus("❌ Please fill all fields");
       return;
     }
-  
+
     setStatus("Saving...");
-  
+
     try {
       const token = localStorage.getItem("token");
 
-      const API_BASE =
-    import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !== ""
-      ? import.meta.env.VITE_API_URL
-      : "/api"; // fallback to vite proxy in dev
-  
-      const res = await fetch(`${API_BASE}/save-knowledge`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: businessName,
-          whatsapp_number: whatsappNumber,
-          content,
-        }),
-      });
-  
+      const isEditMode = !!initialBusinessData?.id;
+
+      // split textarea back into array of objects
+      const kbArray = kbText
+        .split("\n\n")
+        .map((c) => ({ content: c.trim() }))
+        .filter((c) => c.content !== "");
+
+      const res = await fetch(
+        `${API_BASE}/save-knowledge`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            id: isEditMode ? initialBusinessData.id : undefined,
+            name: businessName,
+            whatsapp_number: whatsappNumber,
+            kb_content: kbArray, // join array to string
+          }),
+        }
+      );
+
       if (!res.ok) throw new Error(await res.text());
-  
+
       const savedBusiness = await res.json();
-  
+
       // ✅ If you also have images to upload:
       for (const img of images) {
         const formData = new FormData();
         formData.append("businessId", savedBusiness.id);
         formData.append("description", img.description);
-        formData.append("image", img.file);
+        // if (img.id) formData.append("id", img.id); // 👈 include id for edit
+        // if (img.file) formData.append("image", img.file); // only for new/replaced
 
-        const API_BASE =
-    import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !== ""
-      ? import.meta.env.VITE_API_URL
-      : "/api"; // fallback to vite proxy in dev
-  
+        if (img.id) {
+          // Editing existing
+          formData.append("id", img.id);
+          if (img.file) formData.append("image", img.file); // optional replace
+        } else if (img.file) {
+          // New upload
+          formData.append("image", img.file);
+        }
+
         await fetch(`${API_BASE}/save-image`, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: formData,
         });
       }
-  
       setStatus("✅ Saved successfully");
       navigate("/dashboard", { state: { newBusiness: savedBusiness } });
-  
     } catch (err) {
       setStatus(`❌ ${err}`);
     }
   };
 
   const handleBack = () => {
-    console.log("Back button clicked")
-    navigate(-1) // Navigate back to the previous page
-  }
+    console.log("Back button clicked");
+    navigate(-1); // Navigate back to the previous page
+  };
 
   // Remove image before saving
-  const removeImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index))
-    // setImagePreviews((prev) => prev.filter((_, i) => i !== index))
+  const removeImage = async (index: number) => {
+    const token = localStorage.getItem("token");
+  const img = images[index];
+  if (img.id) {
+    await fetch(`${API_BASE}/delete-image/${img.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
   }
+  setImages(prev => prev.filter((_, i) => i !== index));
+};
+
 
   const sampleQuestions = [
     "What are your business hours?",
     "How much does delivery cost?",
     "Do you have vegetarian options?",
     "How can I place an order?",
-  ]
+  ];
 
   const FloatingIcons = () => (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -349,7 +415,7 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
         </div>
       ))}
     </div>
-  )
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#075E54] via-[#128C7E] to-[#25D366] relative">
@@ -371,8 +437,12 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
                   <SmartToy className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div>
-                  <span className="text-lg sm:text-xl font-bold text-[#075E54]">AI Knowledge Setup</span>
-                  <div className="text-xs text-gray-500 hidden sm:block">Train your WhatsApp AI assistant</div>
+                  <span className="text-lg sm:text-xl font-bold text-[#075E54]">
+                    AI Knowledge Setup
+                  </span>
+                  <div className="text-xs text-gray-500 hidden sm:block">
+                    Train your WhatsApp AI assistant
+                  </div>
                 </div>
               </div>
             </div>
@@ -383,8 +453,12 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
                 className="flex items-center gap-1 sm:gap-2 px-3 py-2 sm:px-4 border border-[#25D366] text-[#25D366] rounded-full hover:bg-[#25D366] hover:text-white transition-all text-xs sm:text-sm touch-manipulation"
               >
                 <Preview className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">{isPreviewMode ? "Edit Mode" : "Preview"}</span>
-                <span className="sm:hidden">{isPreviewMode ? "Edit" : "Preview"}</span>
+                <span className="hidden sm:inline">
+                  {isPreviewMode ? "Edit Mode" : "Preview"}
+                </span>
+                <span className="sm:hidden">
+                  {isPreviewMode ? "Edit" : "Preview"}
+                </span>
               </button>
             </div>
           </div>
@@ -400,9 +474,13 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
               <div className="bg-gradient-to-r from-[#25D366] to-[#128C7E] p-4 sm:p-6 text-white">
                 <div className="flex items-center gap-2 sm:gap-3 mb-2">
                   <Business className="w-5 h-5 sm:w-6 sm:h-6" />
-                  <h1 className="text-xl sm:text-2xl font-bold">Business Information</h1>
+                  <h1 className="text-xl sm:text-2xl font-bold">
+                    Business Information
+                  </h1>
                 </div>
-                <p className="text-white/90 text-sm sm:text-base">Set up your WhatsApp AI assistant in minutes</p>
+                <p className="text-white/90 text-sm sm:text-base">
+                  Set up your WhatsApp AI assistant in minutes
+                </p>
               </div>
 
               <div className="p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
@@ -443,7 +521,9 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
                   </div>
                   <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
                     <Info className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span>This should be your WhatsApp Business account number</span>
+                    <span>
+                      This should be your WhatsApp Business account number
+                    </span>
                   </div>
                 </div>
 
@@ -454,6 +534,31 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
                     AI Knowledge Base
                   </label>
                   <div className="relative">
+                    {/* {kbEntries.map((entry, i) => (
+            <div key={entry.id ?? i} className="relative">
+              <textarea
+                placeholder={`Knowledge entry #${i + 1}`}
+                value={entry.content}
+                onChange={(e) => {
+                  const newEntries = [...kbEntries];
+                  newEntries[i] = { ...newEntries[i], content: e.target.value };
+                  setKbEntries(newEntries);
+                }}
+                rows={6}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 
+                     focus:ring-green-500 focus:outline-none resize-none"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setKbEntries(kbEntries.filter((_, idx) => idx !== i))
+                }
+                className="absolute top-2 right-2 text-red-500"
+              >
+                ✕
+              </button>
+            </div>
+          ))} */}
                     <textarea
                       placeholder="Tell your AI about your business... 
 
@@ -466,57 +571,63 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
                         • Contact: Call us at +60 12-345 6789 for bookings
 
                         The more details you provide, the better your AI will assist customers!"
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      rows={10}
+                      value={kbText}
+                      onChange={(e) => setKbText(e.target.value)}
+                      rows={12}
                       className="w-full px-4 py-3 sm:px-6 sm:py-4 border-2 border-gray-200 rounded-lg sm:rounded-xl focus:border-[#25D366] focus:ring-4 focus:ring-[#25D366]/20 outline-none transition-all text-base sm:text-lg resize-none touch-manipulation"
                     />
                     <div className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 text-xs sm:text-sm text-gray-400">
-                      {content.length} characters
+                      {kbText.length} characters
                     </div>
                   </div>
                 </div>
 
                 {/* 🔹 Image Upload Section */}
-        <div className="space-y-2 sm:space-y-3">
-          <label className="flex items-center gap-2 text-base sm:text-lg font-semibold text-[#075E54]">
-            <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-            Upload Business Images
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleImageChange}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 
+                <div className="space-y-2 sm:space-y-3">
+                  <label className="flex items-center gap-2 text-base sm:text-lg font-semibold text-[#075E54]">
+                    <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                    Upload Business Images
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageChange}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 
                        file:rounded-full file:border-0 file:text-sm file:font-semibold 
                        file:bg-[#25D366]/10 file:text-[#075E54] hover:file:bg-[#25D366]/20"
-          />
+                  />
 
-          {/* 🔹 Preview Selected Images */}
-          {images.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-3">
-              {images.map((src, i) => (
-                <div key={i} className="relative group">
-                  <img src={src?.preview} alt={`Preview ${i}`} className="rounded-lg border shadow-sm" />
-                  <input
-                  type="text"
-                  placeholder="Short description for AI retrieval"
-                  value={src?.description}
-                  onChange={(e) => updateDescription(i, e.target.value)}
-                  className="w-full border rounded p-2 text-sm"
-                />
-                  <button
-                    onClick={() => removeImage(i)}
-                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-80 hover:opacity-100"
-                  >
-                    <Delete className="w-4 h-4" />
-                  </button>
+                  {/* 🔹 Preview Selected Images */}
+                  {images.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-3">
+                      {images.map((src, i) => (
+                        <div key={i} className="relative group">
+                          <img
+                            src={src?.preview}
+                            alt={`Preview ${i}`}
+                            className="rounded-lg border shadow-sm"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Short description for AI retrieval"
+                            value={src?.description}
+                            onChange={(e) =>
+                              updateDescription(i, e.target.value)
+                            }
+                            className="w-full border rounded p-2 text-sm"
+                          />
+                          <button
+                            onClick={() => removeImage(i)}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-80 hover:opacity-100"
+                          >
+                            <Delete className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          )}
-          </div>
 
                 {/* Action Buttons */}
                 <div className="flex flex-col gap-4 pt-4 sm:pt-6 border-t border-gray-200">
@@ -526,11 +637,13 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
                         status.includes("✅")
                           ? "bg-green-100 text-green-800 border border-green-200"
                           : status.includes("❌")
-                            ? "bg-red-100 text-red-800 border border-red-200"
-                            : "bg-blue-100 text-blue-800 border border-blue-200"
+                          ? "bg-red-100 text-red-800 border border-red-200"
+                          : "bg-blue-100 text-blue-800 border border-blue-200"
                       }`}
                     >
-                      {status.includes("✅") && <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />}
+                      {status.includes("✅") && (
+                        <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                      )}
                       {status}
                     </div>
                   )}
@@ -544,7 +657,7 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
                     </button>
                     <button
                       onClick={handleSubmit}
-                      disabled={!businessName || !whatsappNumber || !content}
+                      disabled={!businessName || !whatsappNumber || !kbEntries}
                       className="flex items-center justify-center gap-2 px-6 py-3 sm:px-8 bg-[#25D366] text-white rounded-lg sm:rounded-xl hover:bg-[#128C7E] disabled:bg-gray-300 disabled:cursor-not-allowed transition-all font-medium shadow-lg text-sm sm:text-base touch-manipulation"
                     >
                       <Save className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -562,25 +675,30 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
             <div className="bg-white/95 backdrop-blur-lg rounded-xl sm:rounded-2xl shadow-xl border border-white/20 p-4 sm:p-6">
               <div className="flex items-center gap-2 mb-3 sm:mb-4">
                 <Lightbulb className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
-                <h3 className="text-base sm:text-lg font-bold text-[#075E54]">Pro Tips</h3>
+                <h3 className="text-base sm:text-lg font-bold text-[#075E54]">
+                  Pro Tips
+                </h3>
               </div>
               <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-gray-700">
                 <div className="flex gap-2 sm:gap-3">
                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#25D366] rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
                   <div>
-                    <strong>Be specific:</strong> Include exact prices, hours, and contact details
+                    <strong>Be specific:</strong> Include exact prices, hours,
+                    and contact details
                   </div>
                 </div>
                 <div className="flex gap-2 sm:gap-3">
                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#25D366] rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
                   <div>
-                    <strong>Use examples:</strong> Show how customers typically interact with you
+                    <strong>Use examples:</strong> Show how customers typically
+                    interact with you
                   </div>
                 </div>
                 <div className="flex gap-2 sm:gap-3">
                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#25D366] rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
                   <div>
-                    <strong>Update regularly:</strong> Keep information current for best results
+                    <strong>Update regularly:</strong> Keep information current
+                    for best results
                   </div>
                 </div>
               </div>
@@ -590,7 +708,9 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
             <div className="bg-white/95 backdrop-blur-lg rounded-xl sm:rounded-2xl shadow-xl border border-white/20 p-4 sm:p-6">
               <div className="flex items-center gap-2 mb-3 sm:mb-4">
                 <ChatIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#25D366]" />
-                <h3 className="text-base sm:text-lg font-bold text-[#075E54]">AI Preview</h3>
+                <h3 className="text-base sm:text-lg font-bold text-[#075E54]">
+                  AI Preview
+                </h3>
               </div>
 
               <div className="space-y-2 sm:space-y-3">
@@ -599,14 +719,20 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
                 </div>
 
                 {sampleQuestions.map((question, i) => (
-                  <div key={i} className="bg-gray-50 rounded-lg p-2 sm:p-3 border-l-4 border-[#25D366]">
-                    <div className="text-xs sm:text-sm text-gray-700">"{question}"</div>
+                  <div
+                    key={i}
+                    className="bg-gray-50 rounded-lg p-2 sm:p-3 border-l-4 border-[#25D366]"
+                  >
+                    <div className="text-xs sm:text-sm text-gray-700">
+                      "{question}"
+                    </div>
                   </div>
                 ))}
 
                 <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-[#25D366]/10 rounded-lg border border-[#25D366]/20">
                   <div className="text-xs sm:text-sm text-[#075E54] font-medium">
-                    💡 The more details you provide, the smarter your AI becomes!
+                    💡 The more details you provide, the smarter your AI
+                    becomes!
                   </div>
                 </div>
               </div>
@@ -614,23 +740,41 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
 
             {/* Stats Card */}
             <div className="bg-white/95 backdrop-blur-lg rounded-xl sm:rounded-2xl shadow-xl border border-white/20 p-4 sm:p-6">
-              <h3 className="text-base sm:text-lg font-bold text-[#075E54] mb-3 sm:mb-4">What to Expect</h3>
+              <h3 className="text-base sm:text-lg font-bold text-[#075E54] mb-3 sm:mb-4">
+                What to Expect
+              </h3>
               <div className="space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-gray-600">Setup Time</span>
-                  <span className="text-xs sm:text-sm font-bold text-[#25D366]">Less than 5 minutes</span>
+                  <span className="text-xs sm:text-sm text-gray-600">
+                    Setup Time
+                  </span>
+                  <span className="text-xs sm:text-sm font-bold text-[#25D366]">
+                    Less than 5 minutes
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-gray-600">Response Speed</span>
-                  <span className="text-xs sm:text-sm font-bold text-[#25D366]">Less than 2 seconds</span>
+                  <span className="text-xs sm:text-sm text-gray-600">
+                    Response Speed
+                  </span>
+                  <span className="text-xs sm:text-sm font-bold text-[#25D366]">
+                    Less than 2 seconds
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-gray-600">Accuracy Rate</span>
-                  <span className="text-xs sm:text-sm font-bold text-[#25D366]">95%+</span>
+                  <span className="text-xs sm:text-sm text-gray-600">
+                    Accuracy Rate
+                  </span>
+                  <span className="text-xs sm:text-sm font-bold text-[#25D366]">
+                    95%+
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-gray-600">Availability</span>
-                  <span className="text-xs sm:text-sm font-bold text-[#25D366]">24/7</span>
+                  <span className="text-xs sm:text-sm text-gray-600">
+                    Availability
+                  </span>
+                  <span className="text-xs sm:text-sm font-bold text-[#25D366]">
+                    24/7
+                  </span>
                 </div>
               </div>
             </div>
@@ -638,7 +782,7 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default KnowledgeEditor
+export default KnowledgeEditor;

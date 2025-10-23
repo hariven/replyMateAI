@@ -5,8 +5,11 @@ import { pool } from '../db';
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // --- Main function ---
-export const saveKnowledgeWithEmbedding = async (businessId: string, content: string) => {
-    const chunks = chunkText(content, 500); // ~500 chars, sentence-aware
+export const saveKnowledgeWithEmbedding = async (businessId: string, content: string | { content: string }[]) => {
+    const normalizedContent = Array.isArray(content)
+        ? content.map(item => item.content).join(' ')
+        : content;
+    const chunks = chunkText(normalizedContent, 500); // ~500 chars, sentence-aware
     console.log(`Saving ${chunks.length} chunks for business ${businessId}`);
 
     for (const chunk of chunks) {
