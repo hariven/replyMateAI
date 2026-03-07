@@ -46,17 +46,17 @@ const PrivateDashboard: React.FC = () => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }); // Replace with your actual API endpoint
-        if (!response.ok) {
-          throw new Error("Failed to fetch businesses");
-        }
-        const data = await response.json();
+        });
 
         if (response.status === 401) {
           localStorage.removeItem("token");
           navigate("/");
           return;
         }
+        if (!response.ok) {
+          throw new Error("Failed to fetch businesses");
+        }
+        const data = await response.json();
         setBusinesses(data);
       } catch (error) {
         console.error("Error fetching businesses:", error);

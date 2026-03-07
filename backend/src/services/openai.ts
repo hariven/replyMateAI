@@ -8,10 +8,21 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY!
 })
 
-export const getAIReply = async (context: string, userMessage: string, business: { name: string; id: string },
-    userID: string, imageMatch?: { description: string; url: string }) => {
-    // Retrieve memory for user
-    const memory = getUserMemory(userID)
+export const getAIReply = async (
+    context: string,
+    userMessage: string,
+    business: { name: string; id: string },
+    userID: string,
+    imageMatch?: { description: string; url: string },
+    conversationHistory?: { message: string; is_user: boolean }[]
+) => {
+    // Use persistent DB history if available, otherwise fall back to in-memory
+    const memory = conversationHistory && conversationHistory.length > 0
+        ? conversationHistory.map(m => ({
+            role: m.is_user ? 'user' as const : 'assistant' as const,
+            content: m.message
+        }))
+        : getUserMemory(userID)
 
     //     const systemPrompt = `
     // You are the business owner of "${business.name}".

@@ -170,8 +170,6 @@ import { getAIReply } from '../services/openai.ts'
 import { pool } from '../db.ts'
 import { saveImageWithEmbedding, saveKnowledgeWithEmbedding } from '../services/embedding.ts'
 import { getRelevantImage, getRelevantKnowledge } from '../services/retrieval.ts'
-import { addMessageToMemory, getUserMemory } from '../memory.ts'
-import jwt from "jsonwebtoken"
 import { authenticate, AuthRequest } from '../middleware/authenticate.ts'
 import multer from 'multer'
 import { getConversationContext, saveMessage } from '../services/conversation.ts'
@@ -198,113 +196,67 @@ router.post('/webhook', async (req: Request, res: Response) => {
     try {
         const entry = req.body?.entry?.[0]
         const changes = entry?.changes?.[0]
-        const message = changes?.value?.messages?.[0]
-        const to = changes?.value?.metadata?.display_phone_number
+        const value = changes?.value
+        const message = value?.messages?.[0]
+        const to = value?.metadata?.display_phone_number
         const from = message?.from
         const userText = message?.text?.body
-        const value = changes?.value
 
-        console.log("Webhook payload:", from);
-        // if (!message || !from || !to || !userText) {
-        //     console.error('❌ Invalid webhook payload:', req.body)
-        //     return res.sendStatus(400)
-        // }
-
-        // 1️⃣ Save user's message
-
-        // ✅ Step 1: Find business by WhatsApp number
-        const { rows: businesses } = await pool.query(
-            `SELECT * FROM business WHERE whatsapp_number = $1`,
-            [to]
-        )
-
-        const business = businesses[0]
-
-        if (!business) {
-            await sendWhatsAppMessage(from, 'Business not found in the system.')
-            return res.sendStatus(200)
-        }
-
-        await saveMessage(business.user_id, business.id, from, userText, true);
-
-        // 2️⃣ Retrieve past conversation
-        const context = await getConversationContext(business.user_id, business.id, from);
-
-        // Handle status updates (delivery/read receipts)
+        // Handle status updates (delivery/read receipts) early — no processing needed
         if (value?.statuses) {
-            console.log('📩 Received status event:', value.statuses)
             return res.sendStatus(200)
         }
 
-        // Ignore if no actual message
+        // Ignore non-message events
         if (!message || !from || !to || !userText) {
-            console.log('ℹ️ Non-message webhook event received:', req.body)
             return res.sendStatus(200)
         }
 
         console.log('Webhook received:', { from, to, userText })
 
-        if (value?.statuses) {
-            console.log('Received status event:', value.statuses)
+        // Step 1: Find business by WhatsApp number
+        const { rows: businesses } = await pool.query(
+            `SELECT * FROM business WHERE whatsapp_number = $1`,
+            [to]
+        )
+        const business = businesses[0]
+        if (!business) {
+            await sendWhatsAppMessage(from, 'Business not found in the system.')
             return res.sendStatus(200)
         }
 
+        // Step 2: Save user message to DB
+        await saveMessage(business.user_id, business.id, from, userText, true)
 
+        // Step 3: Get persistent conversation history from DB
+        const conversationHistory = await getConversationContext(business.user_id, business.id, from)
 
-        // 4️⃣ Generate reply (simple concat for demo)
-        let reply = `You said: ${userText}`;
-        if (context.length) {
-            reply += `\n\nPrevious conversation:\n`;
-            context.forEach(msg => {
-                const sender = msg.is_user ? 'You' : 'Bot';
-                reply += `${sender}: ${msg.message}\n`;
-            });
-        }
-
-
-
-        // ✅ Step 2: Check memory (avoid repeating greetings)
-        const memory = getUserMemory(from)
-        const isFirstMessage = memory.length === 0
-
-        // ✅ Step 3: Get relevant knowledge (restricted by user_id + business_id)
+        // Step 4: Get relevant knowledge (RAG)
         const knowledgeArray = await getRelevantKnowledge(business.user_id, business.id, userText, 'cosine')
         const knowledge = knowledgeArray.map(k => k.content).join("\n\n")
 
-        // ✅ Step 4: Retrieve relevant IMAGE knowledge
+        // Step 5: Get relevant image (RAG)
         const imageMatch = await getRelevantImage(business.id, userText)
 
-        console.log('knowledge', knowledge)
         if (!knowledge && !imageMatch) {
-            // ✅ Step 4: Retrieve relevant IMAGE knowledge
-            // const imageMatch = await getRelevantImage(business.id, userText)
-            await sendWhatsAppMessage(from, 'No knowledge base found for this business.')
+            await sendWhatsAppMessage(from, "I don't have enough information to answer that right now.")
             return res.sendStatus(200)
         }
 
-        // ✅ Step 5: Generate AI response
-        const aiReply = await getAIReply(knowledge, userText, business, from, imageMatch)
+        // Step 6: Generate AI reply using KB context + persistent conversation history
+        const aiReply = await getAIReply(knowledge, userText, business, from, imageMatch, conversationHistory)
 
-        // ✅ Step 6: Avoid duplicate greetings
-        if (!isFirstMessage && aiReply.text.includes('How can I help you today')) {
-            console.log('Skipping duplicate greeting for returning user.')
-        } else {
-            await sendWhatsAppMessage(from, aiReply?.text)
-        }
+        // Step 7: Send text reply
+        await sendWhatsAppMessage(from, aiReply?.text)
 
-        console.log('imageMatch -', imageMatch)
-
-        // ✅ Step 7: If image found, send it after reply
+        // Step 8: Send image if matched
         if (imageMatch) {
-            console.log(`📷 Sending image: ${imageMatch?.description} -> ${imageMatch.url}`)
+            console.log(`📷 Sending image: ${imageMatch.description} -> ${imageMatch.url}`)
             await sendWhatsAppImage(from, imageMatch.url)
         }
 
-        // ✅ Step 6: Save chat to memory
-        addMessageToMemory(from, 'user', userText)
-        addMessageToMemory(from, 'assistant', aiReply?.text || '')
-
-        await saveMessage(business.user_id, business.id, from, aiReply?.text || '', false);
+        // Step 9: Save AI reply to DB
+        await saveMessage(business.user_id, business.id, from, aiReply?.text || '', false)
 
         return res.sendStatus(200)
     } catch (err) {
@@ -464,18 +416,17 @@ router.post("/save-image", authenticate, upload.single("image"),
                 );
                 image = updateRes.rows[0];
             } else {
-                //CREATE
-                // ✅ Save embedding (always recompute if description changed)
+                // CREATE
+                if (!uploadResult?.secure_url) {
+                    return res.status(400).send("Image file is required");
+                }
                 await saveImageWithEmbedding(
                     businessId,
                     description,
-                    uploadResult?.secure_url || image.image_url
+                    uploadResult.secure_url
                 );
 
-                return res.status(200).json({
-                    message: id ? "✅ Image updated" : "✅ Image saved",
-                    image,
-                });
+                return res.status(200).json({ message: "✅ Image saved" });
             }
         } catch (err) {
             console.error("❌ Error saving image:", err);
