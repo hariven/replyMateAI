@@ -131,7 +131,7 @@ interface KnowledgeEntry {
 
 interface ImageData {
   id: string; // for existing images
-  file: File;
+  file?: File; // make file optional
   preview: string;
   description: string;
 }
@@ -160,7 +160,7 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
   const [images, setImages] = useState<ImageData[]>([]);
   //  const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const location = useLocation();
-  const initialBusinessData = (location.state as any)?.business;
+  const initialBusinessData = (location.state as { business?: KnowledgeEditorProps["initialBusinessData"] })?.business;
   // const initialKBData = (location.state as any)?.knowledge_base_embeddings;
 
   const navigate = useNavigate();
@@ -173,10 +173,10 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
       setBusinessName(initialBusinessData.name ?? "");
       setWhatsappNumber(initialBusinessData.whatsapp_number ?? "");
       setImages(
-        (initialBusinessData.images || []).map(img => ({
+        (initialBusinessData.images || []).map((img: { id: string; url: string; description: string }) => ({
           id: img.id,
           file: undefined, // no local file for existing images
-          preview: img.image_url, // cloudinary url
+          preview: img.url, // use the correct property
           description: img.description
         }))
       );
@@ -190,10 +190,10 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
       // );
       
     }
-    const entries = initialBusinessData?.kb ?? [];
+    const entries = initialBusinessData?.kb_content ?? [];
 
     // ✅ sort entries by ID ascending before using
-    const sortedEntries = [...entries].sort((a, b) => a.id - b.id);
+    const sortedEntries = [...entries].sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
 
     setKbEntries(sortedEntries);
 
@@ -229,6 +229,7 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
     const newImages = files.map((file) => ({
+      id: crypto.randomUUID(), // Generate a unique ID for each new image
       file,
       preview: URL.createObjectURL(file),
       description: "",

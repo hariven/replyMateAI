@@ -662,26 +662,26 @@ const Login: React.FC = () => {
     }, 1000);
   };
 
-  const FloatingIcons = () => (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-      {[...Array(12)].map((_, i) => (
-        <div
-          key={i}
-          className="absolute animate-float opacity-5"
-          style={{
-            top: `${Math.random() * 100}%`,
-            left: `${Math.random() * 100}%`,
-            animationDelay: `${i * 1.5}s`,
-            animationDuration: `${6 + Math.random() * 3}s`,
-          }}
-        >
-          <div className="w-4 h-4 sm:w-6 sm:h-6 bg-[#25D366] rounded-full flex items-center justify-center">
-            <ChatIcon className="w-2 h-2 sm:w-4 sm:h-4 text-white" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  // const FloatingIcons = () => (
+  //   <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+  //     {[...Array(12)].map((_, i) => (
+  //       <div
+  //         key={i}
+  //         className="absolute animate-float opacity-5"
+  //         style={{
+  //           top: `${Math.random() * 100}%`,
+  //           left: `${Math.random() * 100}%`,
+  //           animationDelay: `${i * 1.5}s`,
+  //           animationDuration: `${6 + Math.random() * 3}s`,
+  //         }}
+  //       >
+  //         <div className="w-4 h-4 sm:w-6 sm:h-6 bg-[#25D366] rounded-full flex items-center justify-center">
+  //           <ChatIcon className="w-2 h-2 sm:w-4 sm:h-4 text-white" />
+  //         </div>
+  //       </div>
+  //     ))}
+  //   </div>
+  // );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#075E54] via-[#128C7E] to-[#25D366] relative flex items-center justify-center p-3 sm:p-4 overflow-hidden">
