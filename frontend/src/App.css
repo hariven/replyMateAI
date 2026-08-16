@@ -6,13 +6,58 @@
   background-repeat: repeat;
 }
 
-/* #root {
+/* Animations */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* Update the animate-float class to use our custom animation */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Glass effect enhancements */
+.glass {
+  @apply bg-white/10 backdrop-blur-lg border border-white/20;
+}
+
+.glass-hover {
+  @apply hover:bg-white/20 transition-all duration-300;
+}
+
+/* Create a subtle noise texture for added depth */
+.noise-bg {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stretch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Optional: Add a slight tint to the glass effect for more depth */
+.glass-tint {
+  @apply bg-white/5 backdrop-blur-lg border border-white/10;
+}
+
+/* Original commented out styles (preserved for reference) */
+/*
+#root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
-  text-align: center;
-} */
-/* 
+  text-align:;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -47,4 +92,5 @@
 
 .read-the-docs {
   color: #888;
-} */
+}
+*/
