@@ -10,8 +10,7 @@ import PublicDashboard from './_components/PublicDashboard'
 import PrivateRoute from './_components/PrivateRoute'
 import PrivateDashboard from './_components/PrivateDashboard'
 import ForgotPassword from './_components/ForgotPassword'
-// import ResetPassword from './_components/ResetPassword'
-import ResetPassword from './_components/ForgotPassword'
+import ResetPassword from './_components/ResetPassword'
 
 function App() {
   // const [count, setCount] = useState(0)
@@ -36,7 +35,6 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         {/* Knowledge Base Editor */}
