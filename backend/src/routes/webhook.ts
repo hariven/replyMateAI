@@ -198,9 +198,9 @@ router.post('/webhook', async (req: Request, res: Response) => {
         const changes = entry?.changes?.[0]
         const value = changes?.value
         const message = value?.messages?.[0]
-        const to = value?.metadata?.display_phone_number
-        const from = message?.from
-        const userText = message?.text?.body
+        // const to = value?.metadata?.display_phone_number
+        // const from = message?.from
+        // const userText = message?.text?.body
 
         // Handle status updates (delivery/read receipts) early — no processing needed
         if (value?.statuses) {
@@ -208,11 +208,30 @@ router.post('/webhook', async (req: Request, res: Response) => {
         }
 
         // Ignore non-message events
-        if (!message || !from || !to || !userText) {
+        if (!message) {
             return res.sendStatus(200)
         }
 
-        console.log('Webhook received:', { from, to, userText })
+        const messageId = message?.id
+        const to = value?.metadata?.display_phone_number
+        const from = message?.from
+        const userText = message?.text?.body
+
+        if (!messageId || !from || !to || !userText) {
+            return res.sendStatus(200)
+        }
+
+        console.log('Webhook received:', {
+            messageId,
+            from,
+            to,
+            userText
+        })
+
+        // Respond to WhatsApp immediately. If we make it wait on DB/RAG/OpenAI
+        // calls before replying, it can time out and redeliver this same
+        // webhook, which is what was causing double replies.
+        res.sendStatus(200)
 
         // Step 1: Find business by WhatsApp number
         const { rows: businesses } = await pool.query(
@@ -222,7 +241,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
         const business = businesses[0]
         if (!business) {
             await sendWhatsAppMessage(from, 'Business not found in the system.')
-            return res.sendStatus(200)
+            return
         }
 
         // Step 2: Save user message to DB
@@ -240,7 +259,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
 
         if (!knowledge && !imageMatch) {
             await sendWhatsAppMessage(from, "I don't have enough information to answer that right now.")
-            return res.sendStatus(200)
+            return
         }
 
         // Step 6: Generate AI reply using KB context + persistent conversation history
@@ -257,11 +276,11 @@ router.post('/webhook', async (req: Request, res: Response) => {
 
         // Step 9: Save AI reply to DB
         await saveMessage(business.user_id, business.id, from, aiReply?.text || '', false)
-
-        return res.sendStatus(200)
     } catch (err) {
         console.error('❌ Error handling webhook:', err)
-        return res.sendStatus(500)
+        if (!res.headersSent) {
+            res.sendStatus(500)
+        }
     }
 })
 
