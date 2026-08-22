@@ -21,8 +21,18 @@ export const pool = new Pool(
         }
 )
 
+// Without this, an idle client losing its connection (e.g. the DB closing it
+// after a timeout) emits an unhandled 'error' event, which crashes the whole
+// Node process. This is what was causing the repeated crash/restart loop on Render.
+pool.on('error', (err) => {
+    console.error('❌ Unexpected error on idle PostgreSQL client:', err)
+})
+
 pool.connect()
-    .then(() => console.log('✅ Connected to PostgreSQL'))
+    .then((client) => {
+        console.log('✅ Connected to PostgreSQL')
+        client.release()
+    })
     .catch((err) => console.error('❌ Error connecting to PostgreSQL:', err))
 
 
