@@ -119,7 +119,7 @@ Output format:
 
 
     const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-5.4',
         messages: messages,
         temperature: 0.5
     })
