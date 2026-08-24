@@ -10,7 +10,8 @@ export async function saveMessage(
     businessId: string,
     phone: string | null | undefined,
     message: string,
-    isUser = true
+    isUser = true,
+    messageId?: string
 ) {
     // ✅ Validate input
     if (!userId || !businessId || !phone) {
@@ -25,10 +26,10 @@ export async function saveMessage(
 
     try {
         const { rows } = await pool.query(
-            `INSERT INTO conversations (user_id, business_id, phone_number, message, is_user)
-       VALUES ($1, $2, $3, $4, $5)
+            `INSERT INTO conversations (user_id, business_id, phone_number, message, is_user, message_id)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`, // ✅ return inserted row if needed
-            [userId, businessId, phone, message, isUser]
+            [userId, businessId, phone, message, isUser, messageId || null]
         );
 
         return rows[0];

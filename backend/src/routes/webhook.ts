@@ -228,6 +228,16 @@ router.post('/webhook', async (req: Request, res: Response) => {
             userText
         })
 
+        // ✅ DEDUPLICATION: Check if message already processed
+        const { rows: existing } = await pool.query(
+            'SELECT 1 FROM conversations WHERE message_id = $1',
+            [messageId]
+        )
+        if (existing.length > 0) {
+            console.log('Duplicate messageId, skipping:', messageId)
+            return res.sendStatus(200)
+        }
+
         // Respond to WhatsApp immediately. If we make it wait on DB/RAG/OpenAI
         // calls before replying, it can time out and redeliver this same
         // webhook, which is what was causing double replies.
@@ -244,8 +254,8 @@ router.post('/webhook', async (req: Request, res: Response) => {
             return
         }
 
-        // Step 2: Save user message to DB
-        await saveMessage(business.user_id, business.id, from, userText, true)
+        // Step 2: Save user message to DB (with messageId for deduplication)
+        await saveMessage(business.user_id, business.id, from, userText, true, messageId)
 
         // Step 3: Get persistent conversation history from DB
         const conversationHistory = await getConversationContext(business.user_id, business.id, from)
@@ -274,7 +284,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
             await sendWhatsAppImage(from, imageMatch.url)
         }
 
-        // Step 9: Save AI reply to DB
+        // Step 9: Save AI reply to DB (no messageId needed for outgoing)
         await saveMessage(business.user_id, business.id, from, aiReply?.text || '', false)
     } catch (err) {
         console.error('❌ Error handling webhook:', err)
