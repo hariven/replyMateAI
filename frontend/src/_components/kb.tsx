@@ -119,6 +119,7 @@ import {
   Lightbulb,
   Business,
   Delete,
+  Badge,
   // Description,
 } from "@mui/icons-material";
 import ImageIcon from "@mui/icons-material/Image";
@@ -145,6 +146,9 @@ interface KnowledgeEditorProps {
     whatsapp_number: string;
     kb_content: KnowledgeEntry[]; // make it an array
     images: { id: string; url: string; description: string }[]; // existing images
+    whatsapp_phone_number_id?: string;
+    whatsapp_access_token?: string;
+    waba_id?: string;
   };
 }
 
@@ -155,6 +159,10 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
   const [kbText, setKbText] = useState("");
   const [status, setStatus] = useState("");
   const [whatsappNumber, setWhatsappNumber] = useState("");
+  // 🔹 WhatsApp Configuration fields
+  const [whatsappPhoneNumberId, setWhatsappPhoneNumberId] = useState("");
+  const [whatsappAccessToken, setWhatsappAccessToken] = useState("");
+  const [wabaId, setWabaId] = useState("");
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   // 🔹 Image state
   const [images, setImages] = useState<ImageData[]>([]);
@@ -172,6 +180,9 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
     if (initialBusinessData) {
       setBusinessName(initialBusinessData.name ?? "");
       setWhatsappNumber(initialBusinessData.whatsapp_number ?? "");
+      setWhatsappPhoneNumberId(initialBusinessData.whatsapp_phone_number_id ?? "");
+      setWhatsappAccessToken(initialBusinessData.whatsapp_access_token ?? "");
+      setWabaId(initialBusinessData.waba_id ?? "");
       setImages(
         (initialBusinessData.images || []).map((img: { id: string; url: string; description: string }) => ({
           id: img.id,
@@ -332,6 +343,9 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
             id: isEditMode ? initialBusinessData.id : undefined,
             name: businessName,
             whatsapp_number: whatsappNumber,
+            whatsapp_phone_number_id: whatsappPhoneNumberId,
+            whatsapp_access_token: whatsappAccessToken,
+            waba_id: wabaId,
             kb_content: kbArray, // join array to string
           }),
         }
@@ -524,6 +538,69 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
                     <Info className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span>
                       This should be your WhatsApp Business account number
+                    </span>
+                  </div>
+                </div>
+
+                {/* WhatsApp Phone Number ID */}
+                <div className="space-y-2 sm:space-y-3">
+                  <label className="flex items-center gap-2 text-base sm:text-lg font-semibold text-[#075E54]">
+                    <Badge className="w-4 h-4 sm:w-5 sm:h-5" />
+                    WhatsApp Phone Number ID
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., 123456789012345"
+                    value={whatsappPhoneNumberId}
+                    onChange={(e) => setWhatsappPhoneNumberId(e.target.value)}
+                    className="w-full px-4 py-3 sm:px-6 sm:py-4 border-2 border-gray-200 rounded-lg sm:rounded-xl focus:border-[#25D366] focus:ring-4 focus:ring-[#25D366]/20 outline-none transition-all text-base sm:text-lg touch-manipulation"
+                  />
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                    <Info className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span>
+                      Found in Meta Developer Console &gt; WhatsApp &gt; Getting Started
+                    </span>
+                  </div>
+                </div>
+
+                {/* WhatsApp Access Token */}
+                <div className="space-y-2 sm:space-y-3">
+                  <label className="flex items-center gap-2 text-base sm:text-lg font-semibold text-[#075E54]">
+                    <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
+                    WhatsApp Access Token
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="Enter your WhatsApp Business API access token"
+                    value={whatsappAccessToken}
+                    onChange={(e) => setWhatsappAccessToken(e.target.value)}
+                    className="w-full px-4 py-3 sm:px-6 sm:py-4 border-2 border-gray-200 rounded-lg sm:rounded-xl focus:border-[#25D366] focus:ring-4 focus:ring-[#25D366]/20 outline-none transition-all text-base sm:text-lg touch-manipulation"
+                  />
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                    <Info className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span>
+                      Permanent token from Meta Developer Console &gt; WhatsApp &gt; Configuration
+                    </span>
+                  </div>
+                </div>
+
+                {/* WhatsApp Business Account ID (WABA ID) */}
+                <div className="space-y-2 sm:space-y-3">
+                  <label className="flex items-center gap-2 text-base sm:text-lg font-semibold text-[#075E54]">
+                    <Business className="w-4 h-4 sm:w-5 sm:h-5" />
+                    WhatsApp Business Account ID (WABA ID)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., 123456789012345"
+                    value={wabaId}
+                    onChange={(e) => setWabaId(e.target.value)}
+                    className="w-full px-4 py-3 sm:px-6 sm:py-4 border-2 border-gray-200 rounded-lg sm:rounded-xl focus:border-[#25D366] focus:ring-4 focus:ring-[#25D366]/20 outline-none transition-all text-base sm:text-lg touch-manipulation"
+                  />
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                    <Info className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span>
+                      Optional: Your WhatsApp Business Account ID from Meta Business Manager
                     </span>
                   </div>
                 </div>

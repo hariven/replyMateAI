@@ -165,7 +165,7 @@
 
 
 import express, { Request, Response } from 'express'
-import { sendWhatsAppImage, sendWhatsAppMessage } from '../services/whatsapp.ts'
+import { sendWhatsAppImage, sendWhatsAppMessage, BusinessWhatsAppConfig } from '../services/whatsapp.ts'
 import { getAIReply } from '../services/openai.ts'
 import { pool } from '../db.ts'
 import { saveImageWithEmbedding, saveKnowledgeWithEmbedding } from '../services/embedding.ts'
@@ -250,8 +250,20 @@ router.post('/webhook', async (req: Request, res: Response) => {
         )
         const business = businesses[0]
         if (!business) {
-            await sendWhatsAppMessage(from, 'Business not found in the system.')
+            // Fallback to env vars for backward compatibility
+            const fallbackConfig: BusinessWhatsAppConfig = {
+                whatsapp_phone_number_id: process.env.WHATSAPP_PHONE_ID || '',
+                whatsapp_access_token: process.env.WHATSAPP_TOKEN || ''
+            }
+            await sendWhatsAppMessage(from, 'Business not found in the system.', fallbackConfig)
             return
+        }
+
+        // Build WhatsApp config from business record (with env fallback)
+        const whatsappConfig: BusinessWhatsAppConfig = {
+            whatsapp_phone_number_id: business.whatsapp_phone_number_id || process.env.WHATSAPP_PHONE_ID || '',
+            whatsapp_access_token: business.whatsapp_access_token || process.env.WHATSAPP_TOKEN || '',
+            waba_id: business.waba_id
         }
 
         // Step 2: Save user message to DB (with messageId for deduplication)
@@ -268,7 +280,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
         const imageMatch = await getRelevantImage(business.id, userText)
 
         if (!knowledge && !imageMatch) {
-            await sendWhatsAppMessage(from, "I don't have enough information to answer that right now.")
+            await sendWhatsAppMessage(from, "I don't have enough information to answer that right now.", whatsappConfig)
             return
         }
 
@@ -276,12 +288,12 @@ router.post('/webhook', async (req: Request, res: Response) => {
         const aiReply = await getAIReply(knowledge, userText, business, from, imageMatch, conversationHistory)
 
         // Step 7: Send text reply
-        await sendWhatsAppMessage(from, aiReply?.text)
+        await sendWhatsAppMessage(from, aiReply?.text, whatsappConfig)
 
         // Step 8: Send image if matched
         if (imageMatch) {
             console.log(`📷 Sending image: ${imageMatch.description} -> ${imageMatch.url}`)
-            await sendWhatsAppImage(from, imageMatch.url)
+            await sendWhatsAppImage(from, imageMatch.url, whatsappConfig)
         }
 
         // Step 9: Save AI reply to DB (no messageId needed for outgoing)
@@ -302,7 +314,16 @@ router.post(
         try {
             const user_id = req.user!.userId; // from middleware
 
-            const { id, name, whatsapp_number, kb_content } = req.body;
+            const {
+                id,
+                name,
+                whatsapp_number,
+                kb_content,
+                whatsapp_phone_number_id,
+                whatsapp_access_token,
+                waba_id
+            } = req.body;
+
             if (!whatsapp_number || !kb_content) {
                 return res
                     .status(400)
@@ -315,10 +336,10 @@ router.post(
                 // 🔹 EDIT (update existing)
                 const updateRes = await pool.query(
                     `UPDATE business
-           SET name = $1, whatsapp_number = $2
-           WHERE id = $3 AND user_id = $4
+           SET name = $1, whatsapp_number = $2, whatsapp_phone_number_id = $3, whatsapp_access_token = $4, waba_id = $5
+           WHERE id = $6 AND user_id = $7
            RETURNING *`,
-                    [name, whatsapp_number, id, user_id]
+                    [name, whatsapp_number, whatsapp_phone_number_id, whatsapp_access_token, waba_id, id, user_id]
                 );
 
                 if (updateRes.rows.length === 0) {
@@ -336,10 +357,10 @@ router.post(
             } else {
                 // 🔹 CREATE (insert new)
                 const insertRes = await pool.query(
-                    `INSERT INTO business (user_id, name, whatsapp_number)
-           VALUES ($1, $2, $3)
+                    `INSERT INTO business (user_id, name, whatsapp_number, whatsapp_phone_number_id, whatsapp_access_token, waba_id)
+           VALUES ($1, $2, $3, $4, $5, $6)
            RETURNING *`,
-                    [user_id, name, whatsapp_number]
+                    [user_id, name, whatsapp_number, whatsapp_phone_number_id, whatsapp_access_token, waba_id]
                 );
                 business = insertRes.rows[0];
 

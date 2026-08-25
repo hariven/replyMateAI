@@ -1,15 +1,19 @@
 import axios from 'axios'
-import dotenv from 'dotenv'
 
-dotenv.config({ quiet: true });
+export interface BusinessWhatsAppConfig {
+    whatsapp_phone_number_id: string;
+    whatsapp_access_token: string;
+    waba_id?: string;
+}
 
-const WABA_TOKEN = process.env.WHATSAPP_TOKEN
-const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_ID
-
-export const sendWhatsAppMessage = async (to: string, text: string) => {
+export const sendWhatsAppMessage = async (
+    to: string,
+    text: string,
+    config: BusinessWhatsAppConfig
+) => {
     try {
         await axios.post(
-            `https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/messages`,
+            `https://graph.facebook.com/v23.0/${config.whatsapp_phone_number_id}/messages`,
             {
                 messaging_product: 'whatsapp',
                 to,
@@ -17,7 +21,7 @@ export const sendWhatsAppMessage = async (to: string, text: string) => {
             },
             {
                 headers: {
-                    Authorization: `Bearer ${WABA_TOKEN}`,
+                    Authorization: `Bearer ${config.whatsapp_access_token}`,
                     'Content-Type': 'application/json'
                 }
             }
@@ -27,13 +31,17 @@ export const sendWhatsAppMessage = async (to: string, text: string) => {
     }
 }
 
-export async function sendWhatsAppImage(to: string, imageUrl: string) {
+export async function sendWhatsAppImage(
+    to: string,
+    imageUrl: string,
+    config: BusinessWhatsAppConfig
+) {
     await fetch(
-        `https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/messages`,
+        `https://graph.facebook.com/v23.0/${config.whatsapp_phone_number_id}/messages`,
         {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+                Authorization: `Bearer ${config.whatsapp_access_token}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
