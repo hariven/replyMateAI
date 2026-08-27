@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   X,
   Menu,
@@ -69,15 +69,24 @@ const PublicDashboard: React.FC = () => {
             </div>
 
             <div className="hidden lg:flex items-center space-x-4 xl:space-x-6">
-              <button className="text-[#075E54] hover:text-[#25D366] font-medium px-3 py-2 transition-colors duration-200">
+              <Link
+                to="/features"
+                className="text-[#075E54] hover:text-[#25D366] font-medium px-3 py-2 transition-colors duration-200"
+              >
                 Features
-              </button>
-              <button className="text-[#075E54] hover:text-[#25D366] font-medium px-3 py-2 transition-colors duration-200">
+              </Link>
+              <Link
+                to="/pricing"
+                className="text-[#075E54] hover:text-[#25D366] font-medium px-3 py-2 transition-colors duration-200"
+              >
                 Pricing
-              </button>
-              <button className="text-[#075E54] hover:text-[#25D366] font-medium px-3 py-2 transition-colors duration-200">
+              </Link>
+              <Link
+                to="/about"
+                className="text-[#075E54] hover:text-[#25D366] font-medium px-3 py-2 transition-colors duration-200"
+              >
                 About
-              </button>
+              </Link>
               <button
                 className="flex items-center gap-2 text-[#075E54] border border-[#25D366] rounded-full px-3 py-2 hover:bg-[#25D366] hover:text-white transition-all duration-300"
                 onClick={handleLoginClick}
@@ -112,15 +121,24 @@ const PublicDashboard: React.FC = () => {
         {isMenuOpen && (
           <div className="lg:hidden bg-white/95 backdrop-blur-lg border-t border-white/20">
             <div className="px-3 sm:px-4 py-4 space-y-2">
-              <button className="w-full text-left text-[#075E54] py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+              <Link
+                to="/features"
+                className="w-full text-left text-[#075E54] py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+              >
                 Features
-              </button>
-              <button className="w-full text-left text-[#075E54] py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+              </Link>
+              <Link
+                to="/pricing"
+                className="w-full text-left text-[#075E54] py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+              >
                 Pricing
-              </button>
-              <button className="w-full text-left text-[#075E54] py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+              </Link>
+              <Link
+                to="/about"
+                className="w-full text-left text-[#075E54] py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+              >
                 About
-              </button>
+              </Link>
               <button
                 className="w-full text-left gap-2 border border-[#25D366] rounded-full py-3 px-4 flex items-center"
                 onClick={handleLoginClick}

@@ -11,6 +11,9 @@ import PrivateRoute from './_components/PrivateRoute'
 import PrivateDashboard from './_components/PrivateDashboard'
 import ForgotPassword from './_components/ForgotPassword'
 import ResetPassword from './_components/ResetPassword'
+import Features from './_components/Features'
+import Pricing from './_components/Pricing'
+import About from './_components/About'
 
 function App() {
   // const [count, setCount] = useState(0)
@@ -40,6 +43,11 @@ function App() {
         {/* Knowledge Base Editor */}
         <Route path="/kb-editor" element={<KnowledgeEditor />} />
         <Route path="/kb-editor/:id" element={<KnowledgeEditor />} />
+
+        {/* Core Pages */}
+        <Route path="/features" element={<Features />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/about" element={<About />} />
       </Routes>
     </BrowserRouter>
   )

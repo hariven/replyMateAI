@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Chat as ChatIcon,
@@ -13,6 +13,11 @@ import {
   Add,
 } from "@mui/icons-material";
 import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import TextField from "@mui/material/TextField";
 
 interface KB {
   id: number;
@@ -31,6 +36,9 @@ const PrivateDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [businesses, setBusinesses] = React.useState<Business[]>([]);
   // const { id } = useParams<{ id: string }>();
+  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [openReplyModal, setOpenReplyModal] = useState(false);
 
   console.log(businesses, "businesses");
 
@@ -77,6 +85,48 @@ const PrivateDashboard: React.FC = () => {
   //   };
 
   const handleAddBusiness = () => navigate("/kb-editor");
+
+  const handleOpenReply = (business: Business) => {
+    setSelectedBusiness(business);
+    setReplyText('');
+    setOpenReplyModal(true);
+  };
+
+  const handleCloseReply = () => {
+    setOpenReplyModal(false);
+    setSelectedBusiness(null);
+    setReplyText('');
+  };
+
+  const handleSendReply = async () => {
+    if (!selectedBusiness || !replyText.trim()) return;
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/reply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          businessId: selectedBusiness.id,
+          phoneNumber: selectedBusiness.whatsapp_number,
+          message: replyText,
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send reply');
+      }
+      // Optionally show success
+      alert('Reply sent successfully!');
+      handleCloseReply();
+    } catch (err) {
+      console.error('Error sending reply:', err);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      alert('Failed to send reply: ' + errorMessage);
+    }
+  };
 
   console.log(businesses, "businesses");
 
@@ -193,18 +243,26 @@ const PrivateDashboard: React.FC = () => {
                   <span className="text-gray-500">Last active:</span>
                   <span className="text-[#25D366] font-medium">Just now</span>
                 </div>
-                <button
-                  onClick={() =>
-                    navigate(`/kb-editor`, {
-                      state: { business: biz,
-                        knowledge_base_embeddings: biz.kb, // ✅ pass KB if exists
-                       },
-                    })
-                  }
-                  className="px-3 py-1 bg-[#25D366] text-white rounded-full text-xs sm:text-sm hover:bg-[#128C7E] transition"
-                >
-                  Edit
-                </button>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() =>
+                      navigate(`/kb-editor`, {
+                        state: { business: biz,
+                          knowledge_base_embeddings: biz.kb,
+                        },
+                      })
+                    }
+                    className="px-3 py-1 bg-[#25D366] text-white rounded-full text-xs sm:text-sm hover:bg-[#128C7E] transition"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleOpenReply(biz)}
+                    className="px-3 py-1 bg-[#25D366] text-white rounded-full text-xs sm:text-sm hover:bg-[#128C7E] transition"
+                  >
+                    Reply manually
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -225,6 +283,29 @@ const PrivateDashboard: React.FC = () => {
             </p>
           </div>
         </div>
+        <Dialog open={openReplyModal} onClose={handleCloseReply}>
+          <DialogTitle>Reply Manually</DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Reply"
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              fullWidth
+              multiline
+              rows={4}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseReply}>Cancel</Button>
+            <Button
+              onClick={handleSendReply}
+              variant="contained"
+              color="primary"
+            >
+              Send Reply
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     </div>
   );

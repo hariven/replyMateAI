@@ -4,6 +4,7 @@ import cors from 'cors'
 import webhookRoutes from './routes/webhook.ts' // ✅ Make sure `.ts` is included if you're using ESM
 import businessRoutes from './routes/business.ts'
 import authRoutes from './routes/auth.ts'
+import replyRoutes from './routes/reply.ts'
 
 dotenv.config({ quiet: true });
 
@@ -31,9 +32,8 @@ app.get('/health', (_req, res) => {
 
 // ✅ Wire the route
 app.use('/api', webhookRoutes)
-
 app.use('/api', businessRoutes)
-
+app.use('/api', replyRoutes)
 app.use("/api", authRoutes);
 
 // Error handler

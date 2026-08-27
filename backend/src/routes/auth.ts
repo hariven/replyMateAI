@@ -152,13 +152,20 @@ router.post("/forgot-password", async (req, res) => {
         // Save the hashed token and expiration to the user
         await setPasswordResetToken(email, hashedToken, expires);
 
+        // Determine frontend URL: in development, use the request origin; in production, use FRONTEND_URL env var
+        const isDev = process.env.NODE_ENV !== 'production';
+        const frontendUrl = isDev
+            ? (req.headers.origin || req.headers.referer || 'http://localhost:5173').replace(/\/$/, '')
+            : process.env.FRONTEND_URL;
+
         // Construct the reset URL
-        const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+        const resetUrl = `${frontendUrl}/reset-password/${token}`;
 
         // Log reset URL in development
-        if (process.env.NODE_ENV !== 'production') {
+        if (isDev) {
             console.log('[DEV] Reset token:', token);
             console.log('[DEV] Reset URL:', resetUrl);
+            console.log('[DEV] Frontend URL used:', frontendUrl);
         }
 
         // Send email if email configured
