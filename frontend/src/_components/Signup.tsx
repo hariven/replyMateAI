@@ -382,7 +382,7 @@
 
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Chat as ChatIcon,
   Email,
@@ -401,7 +401,9 @@ import {
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
+  // Get plan from location state (passed from Pricing page)
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -410,6 +412,7 @@ const Signup: React.FC = () => {
     businessName: "",
     password: "",
     confirmPassword: "",
+    plan: (location.state as { plan?: string })?.plan || ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -463,10 +466,15 @@ const Signup: React.FC = () => {
       : "/api"; // fallback to vite proxy in dev
   
     try {
+      // Remove plan from formData before sending to backend (we'll send it separately)
+      const { plan, ...userData } = formData;
       const response = await fetch(`${API_BASE}/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...userData,
+          plan
+        }),
       });
   
       if (!response.ok) {

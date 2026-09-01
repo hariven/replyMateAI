@@ -131,7 +131,7 @@ interface KnowledgeEntry {
 }
 
 interface ImageData {
-  id: string; // for existing images
+  id?: string; // for existing images
   file?: File; // make file optional
   preview: string;
   description: string;
@@ -144,8 +144,10 @@ interface KnowledgeEditorProps {
     id?: string;
     name: string;
     whatsapp_number: string;
-    kb_content: KnowledgeEntry[]; // make it an array
-    images: { id: string; url: string; description: string }[]; // existing images
+    kb_content?: KnowledgeEntry[]; // make it an array
+    knowledge_base_embeddings?: KnowledgeEntry[]; // alternative name
+    kb?: KnowledgeEntry[]; // alternative name
+    images: { id: string; image_url: string; description: string }[]; // existing images
     whatsapp_phone_number_id?: string;
     whatsapp_access_token?: string;
     waba_id?: string;
@@ -184,10 +186,10 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
       setWhatsappAccessToken(initialBusinessData.whatsapp_access_token ?? "");
       setWabaId(initialBusinessData.waba_id ?? "");
       setImages(
-        (initialBusinessData.images || []).map((img: { id: string; url: string; description: string }) => ({
+        (initialBusinessData.images || []).map((img: { id: string; image_url: string; description: string }) => ({
           id: img.id,
           file: undefined, // no local file for existing images
-          preview: img.url, // use the correct property
+          preview: img.image_url, // use the correct property
           description: img.description
         }))
       );
@@ -201,7 +203,11 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
       // );
       
     }
-    const entries = initialBusinessData?.kb_content ?? [];
+    // Support both possible field names
+    const entries =
+      (initialBusinessData?.kb_content ?? 
+        initialBusinessData?.knowledge_base_embeddings ??
+        initialBusinessData?.kb) ?? [];
 
     // ✅ sort entries by ID ascending before using
     const sortedEntries = [...entries].sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
@@ -210,6 +216,12 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
 
     // stringify with IDs included
     const kbString = sortedEntries.map((e) => `${e.content}`).join("\n\n");
+
+    console.log("🟡 KB LOADED INTO EDITOR:", {
+      entries: sortedEntries,
+      kbString,
+      length: kbString.length,
+    });
 
     setKbText(kbString);
     // setKbEntries(initialBusinessData.kb_content ?? []); // load array
@@ -240,7 +252,7 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
     const newImages = files.map((file) => ({
-      id: crypto.randomUUID(), // Generate a unique ID for each new image
+      // id: crypto.randomUUID(), // Generate a unique ID for each new image
       file,
       preview: URL.createObjectURL(file),
       description: "",
@@ -331,6 +343,12 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
         .map((c) => ({ content: c.trim() }))
         .filter((c) => c.content !== "");
 
+        console.log("🔵 KB BEFORE SAVE:", {
+          kbText,
+          kbArray,
+          length: kbText.length,
+        });
+
       const res = await fetch(
         `${API_BASE}/save-knowledge`,
         {
@@ -355,6 +373,8 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
 
       const savedBusiness = await res.json();
 
+      console.log("🟢 SAVED BUSINESS:", savedBusiness);
+
       // ✅ If you also have images to upload:
       for (const img of images) {
         const formData = new FormData();
@@ -364,13 +384,21 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
         // if (img.file) formData.append("image", img.file); // only for new/replaced
 
         if (img.id) {
-          // Editing existing
           formData.append("id", img.id);
-          if (img.file) formData.append("image", img.file); // optional replace
-        } else if (img.file) {
-          // New upload
+        }
+        
+        if (img.file) {
           formData.append("image", img.file);
         }
+
+        // if (img.id) {
+        //   // Editing existing
+        //   formData.append("id", img.id);
+        //   if (img.file) formData.append("image", img.file); // optional replace
+        // } else if (img.file) {
+        //   // New upload
+        //   formData.append("image", img.file);
+        // }
 
         await fetch(`${API_BASE}/save-image`, {
           method: "POST",

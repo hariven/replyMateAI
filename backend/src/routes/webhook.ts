@@ -192,7 +192,7 @@ router.get('/webhook', (req: Request, res: Response) => {
 })
 
 // ✅ Incoming WhatsApp Messages
-router.post('/webhook', async (req: Request, res: Response) => {
+router.post('/webhook', authenticate, async (req: AuthRequest, res: Response) => {
     try {
         const entry = req.body?.entry?.[0]
         const changes = entry?.changes?.[0]
@@ -218,6 +218,27 @@ router.post('/webhook', async (req: Request, res: Response) => {
         const userText = message?.text?.body
 
         if (!messageId || !from || !to || !userText) {
+            return res.sendStatus(200)
+        }
+
+        // ✅ ACCESS CONTROL: Check if user has active subscription
+        if (!req.user.hasActiveAccess) {
+            console.log(`🔒 Webhook access denied for user ${req.user.userId} - no active access`)
+            // Optional: Send a WhatsApp notification about expired subscription
+            try {
+                // We need to get the WhatsApp config to send a message
+                const fallbackConfig: BusinessWhatsAppConfig = {
+                    whatsapp_phone_number_id: process.env.WHATSAPP_PHONE_ID || '',
+                    whatsapp_access_token: process.env.WHATSAPP_TOKEN || ''
+                }
+                await sendWhatsAppMessage(
+                    from,
+                    'Your ReplyMate subscription has expired. Please renew to continue using the service.',
+                    fallbackConfig
+                )
+            } catch (notifyError) {
+                console.error('Failed to send subscription expiration notification:', notifyError)
+            }
             return res.sendStatus(200)
         }
 
@@ -397,7 +418,7 @@ router.post("/save-image", authenticate, upload.single("image"),
             //     description,
             //     hasFile: !!req.file,
             // });
-            console.log("File info:", user_id)
+            console.log("User ID:", user_id)
 
             if (!businessId || !description) {
                 return res.status(400).send("Missing params");
@@ -415,9 +436,15 @@ router.post("/save-image", authenticate, upload.single("image"),
 
             // ✅ If editing, fetch old image (optional: to delete from Cloudinary)
             if (id) {
+                // Validate and parse image ID as integer
+                const imageId = parseInt(id, 10);
+                if (isNaN(imageId)) {
+                    return res.status(400).send("Invalid image ID");
+                }
+
                 const { rows: imgs } = await pool.query(
                     `SELECT * FROM business_images WHERE id = $1 AND business_id = $2`,
-                    [id, businessId]
+                    [imageId, businessId]
                 );
                 if (!imgs.length) {
                     return res.status(404).send("Image not found");
@@ -448,35 +475,74 @@ router.post("/save-image", authenticate, upload.single("image"),
             }
 
             let image;
+
             if (id) {
-                // 🔹 EDIT
-                const updateRes = await pool.query(
-                    `UPDATE business_images
-                 SET description = $1,
-                     image_url = $2,
-                     updated_at = NOW()
-                 WHERE id = $3 AND business_id = $4
-                 RETURNING *`,
-                    [
-                        description,
-                        uploadResult?.secure_url || null,
-                        id,
-                        businessId,
-                    ]
-                );
+                // EDIT existing image
+                const imageId = parseInt(id, 10);
+
+                if (isNaN(imageId)) {
+                    return res.status(400).send("Invalid image ID");
+                }
+
+                let updateRes;
+
+                if (uploadResult?.secure_url) {
+                    // Existing image + new image file
+                    updateRes = await pool.query(
+                        `UPDATE business_images
+             SET description = $1,
+                 image_url = $2,
+                 updated_at = NOW()
+             WHERE id = $3
+               AND business_id = $4
+             RETURNING *`,
+                        [
+                            description,
+                            uploadResult.secure_url,
+                            imageId,
+                            businessId,
+                        ]
+                    );
+                } else {
+                    // Existing image + description only
+                    updateRes = await pool.query(
+                        `UPDATE business_images
+             SET description = $1,
+                 updated_at = NOW()
+             WHERE id = $2
+               AND business_id = $3
+             RETURNING *`,
+                        [
+                            description,
+                            imageId,
+                            businessId,
+                        ]
+                    );
+                }
+
+                if (updateRes.rows.length === 0) {
+                    return res.status(404).send("Image not found");
+                }
+
                 image = updateRes.rows[0];
+
+                return res.status(200).json(image);
+
             } else {
-                // CREATE
+                // CREATE new image
                 if (!uploadResult?.secure_url) {
                     return res.status(400).send("Image file is required");
                 }
+
                 await saveImageWithEmbedding(
                     businessId,
                     description,
                     uploadResult.secure_url
                 );
 
-                return res.status(200).json({ message: "✅ Image saved" });
+                return res.status(200).json({
+                    message: "✅ Image saved",
+                });
             }
         } catch (err) {
             console.error("❌ Error saving image:", err);
@@ -491,11 +557,17 @@ router.delete("/delete-image/:id", authenticate, async (req: AuthRequest, res: R
         const user_id = req.user!.userId;
         const { id } = req.params;
 
+        // Validate and parse image ID as integer
+        const imageId = parseInt(id, 10);
+        if (isNaN(imageId)) {
+            return res.status(400).send("Invalid image ID");
+        }
+
         const { rows: imgs } = await pool.query(
-            `SELECT * FROM business_images bi 
-         JOIN business b ON bi.business_id = b.id
-         WHERE bi.id = $1 AND b.user_id = $2`,
-            [id, user_id]
+            `SELECT * FROM business_images bi
+             JOIN business b ON bi.business_id = b.id
+             WHERE bi.id = $1 AND b.user_id = $2`,
+            [imageId, user_id]
         );
         if (!imgs.length) return res.status(404).send("Image not found");
 
@@ -504,7 +576,7 @@ router.delete("/delete-image/:id", authenticate, async (req: AuthRequest, res: R
             await cloudinary.uploader.destroy(imgs[0].public_id);
         }
 
-        await pool.query(`DELETE FROM business_images WHERE id = $1`, [id]);
+        await pool.query(`DELETE FROM business_images WHERE id = $1`, [imageId]);
 
         res.json({ message: "✅ Image deleted" });
     } catch (err) {

@@ -6,7 +6,7 @@
   "scripts": {
     "d": "nodemon --watch src --ext ts --exec \"tsx ./src/index.ts\"",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "mx": "node --loader ts-node/esm src/_migrations/fixConversationColumnTypes.ts",
+    "mx": "node --loader ts-node/esm src/_migrations/addPaymentTracking.ts",
     "fix-migration-state": "node --loader ts-node/esm fix_migration_state.ts",
     "start": "if [ \"$SKIP_MIGRATIONS\" = \"true\" ]; then echo \"⏭️  Skipping migrations per SKIP_MIGRATIONS=true\"; else echo \"🔄 Running database migrations...\"; node --loader ts-node/esm src/_migrations/migrate.ts; fi && echo \"🚀 Starting backend server...\" && tsx ./src/index.ts"
   },

@@ -5,6 +5,7 @@ import webhookRoutes from './routes/webhook.ts' // ✅ Make sure `.ts` is includ
 import businessRoutes from './routes/business.ts'
 import authRoutes from './routes/auth.ts'
 import replyRoutes from './routes/reply.ts'
+import paymentRoutes from './routes/payment.ts'
 
 dotenv.config({ quiet: true });
 
@@ -35,6 +36,7 @@ app.use('/api', webhookRoutes)
 app.use('/api', businessRoutes)
 app.use('/api', replyRoutes)
 app.use("/api", authRoutes);
+app.use("/api/payment", paymentRoutes);
 
 // Error handler
 app.use((err, _req, res, _next) => {

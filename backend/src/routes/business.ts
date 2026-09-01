@@ -36,38 +36,47 @@ router.get("/businesses", authenticate, async (req: AuthRequest, res: Response) 
     // );
     const { rows } = await pool.query(
       `
-            SELECT 
-    b.id,
-    b.name,
-    b.whatsapp_number,
-    COALESCE(
-      json_agg(
-        json_build_object(
-          'id', k.id,
-          'content', k.content
-        )
-      ) FILTER (WHERE k.id IS NOT NULL),
-      '[]'
-    ) AS kb,
-    COALESCE(
-      json_agg(
-        DISTINCT jsonb_build_object(
-          'id', bi.id,
-          'description', bi.description,
-          'image_url', bi.image_url
-        )
-      ) FILTER (WHERE bi.id IS NOT NULL),
-      '[]'
-    ) AS images
-  FROM business b
-  LEFT JOIN knowledge_base_embeddings k 
-    ON k.business_id = b.id
-    LEFT JOIN business_images bi
-    ON bi.business_id = b.id
-  WHERE b.user_id = $1
-  GROUP BY b.id
-  ORDER BY b.created_at DESC
-  `,
+      SELECT 
+        b.id,
+        b.name,
+        b.whatsapp_number,
+        b.whatsapp_phone_number_id,
+        b.waba_id,
+    
+        COALESCE(
+          (
+            SELECT json_agg(
+              json_build_object(
+                'id', k.id,
+                'content', k.content
+              )
+              ORDER BY k.id
+            )
+            FROM knowledge_base_embeddings k
+            WHERE k.business_id = b.id
+          ),
+          '[]'::json
+        ) AS kb,
+    
+        COALESCE(
+          (
+            SELECT jsonb_agg(
+              DISTINCT jsonb_build_object(
+                'id', bi.id,
+                'description', bi.description,
+                'image_url', bi.image_url
+              )
+            )
+            FROM business_images bi
+            WHERE bi.business_id = b.id
+          ),
+          '[]'::jsonb
+        ) AS images
+    
+      FROM business b
+      WHERE b.user_id = $1
+      ORDER BY b.created_at DESC
+      `,
       [user.userId]
     );
     res.json(rows);

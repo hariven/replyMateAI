@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
 import { createUser, getUserByEmail, setPasswordResetToken, getUserByResetToken, getUserByResetTokenPlain, updatePasswordAndClearResetToken, updatePasswordAndClearResetTokenById } from "../services/userService";
+import { pool } from "../db";
 
 dotenv.config();
 const router = express.Router();
@@ -61,7 +62,7 @@ if (process.env.EMAIL_USER && process.env.EMAIL_PASS && process.env.EMAIL_HOST &
 
 // POST /signup (Public)
 router.post("/signup", async (req, res) => {
-    const { firstName, lastName, email, phone, businessName, password } = req.body;
+    const { firstName, lastName, email, phone, businessName, password, plan } = req.body;
 
     try {
         // 1. Check if user already exists
@@ -83,14 +84,30 @@ router.post("/signup", async (req, res) => {
             passwordHash,
         });
 
-        // 4. Generate JWT
+        // 4. Set trial and plan information (using UTC times)
+        const trialStart = new Date();
+        const trialEnd = new Date(trialStart.getTime() + (14 * 24 * 60 * 60 * 1000)); // 14 days in milliseconds
+
+        await pool.query(
+            `UPDATE users
+             SET trial_start_date = $1,
+                 trial_end_date = $2,
+                 is_trial = TRUE,
+                 plan_type = $3
+             WHERE id = $4`,
+            [trialStart, trialEnd, plan, newUser.id]
+        );
+
+        // 5. Generate JWT
         const token = jwt.sign(
             { id: newUser.id, email: newUser.email },
             process.env.JWT_SECRET!,
             { expiresIn: "1h" }
         );
 
-        res.json({ token, user: newUser });
+        // Fetch updated user to return
+        const updatedUser = await getUserByEmail(email);
+        res.json({ token, user: updatedUser });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Server error" });

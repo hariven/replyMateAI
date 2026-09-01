@@ -44,86 +44,35 @@ const Pricing: React.FC = () => {
   );
 
   const plans = [
-    {
-      name: "Starter",
-      description: "Perfect for small businesses getting started with WhatsApp automation",
-      monthlyPrice: 350,
-      yearlyPrice: 290,
-      features: [
-        "Up to 1,000 messages/month",
-        "1 WhatsApp Business number",
-        "Basic AI responses (GPT-4o-mini)",
-        "Knowledge base (50 documents)",
-        "Standard analytics dashboard",
-        "Email support",
-        "5-minute setup",
-        "GDPR compliant",
-      ],
-      limitations: [
-        "No human handoff",
-        "No custom integrations",
-        "No advanced analytics",
-        "No priority support",
-      ],
-      cta: "Start Free Trial",
-      popular: false,
-      color: "border-white/10 hover:border-white/20",
-      badge: null,
-    },
-    {
-      name: "Professional",
-      description: "For growing businesses that need advanced automation and analytics",
-      monthlyPrice: 500,
-      yearlyPrice: 414,
-      features: [
-        "Up to 10,000 messages/month",
-        "2 WhatsApp Business numbers",
-        "Advanced AI with RAG (GPT-4o)",
-        "Unlimited knowledge base",
-        "Advanced analytics & reports",
-        "Human handoff & live chat",
-        "CRM integrations (HubSpot, Salesforce)",
-        "Priority email & chat support",
-        "Custom webhooks",
-        "Spam protection",
-        "Multi-language support",
-      ],
-      limitations: [
-        "No dedicated success manager",
-        "No custom model fine-tuning",
-        "No SLA guarantee",
-      ],
-      cta: "Get Started",
-      popular: true,
-      color: "border-[#25D366]/50 bg-[#25D366]/10",
-      badge: "Most Popular",
-    },
-    {
-      name: "Enterprise",
-      description: "For large organizations with custom requirements and high volume",
-      monthlyPrice: 1000,
-      yearlyPrice: 828,
-      features: [
-        "Unlimited messages",
-        "Unlimited WhatsApp numbers",
-        "Custom AI model fine-tuning",
-        "Dedicated success manager",
-        "Custom integrations & API access",
-        "99.9% uptime SLA",
-        "On-premise deployment option",
-        "Advanced security & compliance",
-        "SSO & role-based access",
-        "Custom training & onboarding",
-        "24/7 phone support",
-        "Multi-region deployment",
-      ],
-      limitations: [],
-      cta: "Contact Sales",
-      popular: false,
-      color: "border-white/10 hover:border-white/20",
-      badge: "Custom",
-    },
-  ];
+  {
+    name: "Growth",
+    description: "Everything you need to automate customer conversations with AI",
+    monthlyPrice: 500,
+    yearlyPrice: 400, // 20% discount
+    features: [
+      "GPT-4o AI model",
+      "1 WhatsApp Business number",
+      "Unlimited knowledge base",
+      "Advanced analytics dashboard",
+      "Priority email & chat support (8am-10pm MYT)",
+      "Human handoff capability",
+      "Basic webhooks",
+      "Unlimited WhatsApp service messages",
+      "GDPR compliant",
+      "Setup assistance",
+    ],
+    limitations: [
+      "No custom AI fine-tuning",
+      "No on-premise deployment",
+      "No dedicated account manager",
+      "Standard SLA (99.0%)",
+    ],
+    cta: "Start Free Trial",
+    popular: true,
+    color: "border-[#25D366]/50 bg-[#25D366]/10",
+    badge: "Recommended",
+  }
+];
 
   const formatPrice = (price: number) => `RM ${price}`;
 
@@ -192,7 +141,7 @@ const Pricing: React.FC = () => {
 
           <button
             className="flex items-center gap-2 bg-[#25D366] text-white rounded-full px-4 py-2 hover:bg-[#128C7E] transition-all duration-300 shadow-lg"
-            onClick={() => handleSignupClick("starter")}
+            onClick={() => handleSignupClick("growth")}
           >
             Get Started Free
           </button>
@@ -255,7 +204,7 @@ const Pricing: React.FC = () => {
 
         <button
           className="w-full text-left bg-[#25D366] text-white rounded-full py-3 px-4 flex items-center gap-2"
-          onClick={() => handleSignupClick("starter")}
+          onClick={() => handleSignupClick("growth")}
         >
           Get Started Free
         </button>
@@ -390,15 +339,15 @@ const Pricing: React.FC = () => {
               },
               {
                 q: "Is there a setup fee?",
-                a: "No setup fees on any plan. The 5-minute setup is included free. Enterprise custom integrations may have professional services fees.",
+                a: "No setup fees. The 5-minute setup is included free. Custom integrations may have professional services fees.",
               },
               {
                 q: "What payment methods do you accept?",
-                a: "We accept all major credit cards, wire transfers for annual Enterprise plans, and purchase orders for qualified organizations.",
+                a: "We accept all major credit cards and online banking transfers.",
               },
               {
                 q: "Do you offer discounts for non-profits?",
-                a: "Yes! We offer 50% off Professional plans for registered non-profits. Contact sales with your documentation to apply.",
+                a: "Yes! We offer 50% off for registered non-profits. Contact sales with your documentation to apply.",
               },
             ].map((faq, i) => (
               <details key={i} className="bg-white/5 backdrop-blur-lg rounded-xl border border-white/10 overflow-hidden group">
@@ -428,7 +377,7 @@ const Pricing: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 className="relative overflow-hidden bg-[#25D366] text-white px-8 py-3 rounded-full shadow-lg hover:bg-[#128C7E] transition-all duration-300"
-                onClick={() => handleSignupClick("professional")}
+                onClick={() => handleSignupClick("growth")}
               >
                 <span className="relative z-10">Start Free Trial</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-[#ffffff]/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
