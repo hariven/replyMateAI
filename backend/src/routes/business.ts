@@ -36,13 +36,14 @@ router.get("/businesses", authenticate, async (req: AuthRequest, res: Response) 
     // );
     const { rows } = await pool.query(
       `
-      SELECT 
+      SELECT
         b.id,
         b.name,
         b.whatsapp_number,
+        b.owner_whatsapp_number,
         b.whatsapp_phone_number_id,
         b.waba_id,
-    
+
         COALESCE(
           (
             SELECT json_agg(

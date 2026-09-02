@@ -165,7 +165,7 @@
 
 
 import express, { Request, Response } from 'express'
-import { sendWhatsAppImage, sendWhatsAppMessage, BusinessWhatsAppConfig } from '../services/whatsapp.ts'
+import { sendWhatsAppImage, sendWhatsAppMessage, sendLeadNotification, BusinessWhatsAppConfig } from '../services/whatsapp.ts'
 import { getAIReply } from '../services/openai.ts'
 import { pool } from '../db.ts'
 import { saveImageWithEmbedding, saveKnowledgeWithEmbedding } from '../services/embedding.ts'
@@ -173,6 +173,7 @@ import { getRelevantImage, getRelevantKnowledge } from '../services/retrieval.ts
 import { authenticate, AuthRequest } from '../middleware/authenticate.ts'
 import multer from 'multer'
 import { getConversationContext, saveMessage } from '../services/conversation.ts'
+import { detectLead } from '../services/leadDetection.ts'
 
 const router = express.Router()
 
@@ -317,8 +318,87 @@ router.post('/webhook', authenticate, async (req: AuthRequest, res: Response) =>
             await sendWhatsAppImage(from, imageMatch.url, whatsappConfig)
         }
 
-        // Step 9: Save AI reply to DB (no messageId needed for outgoing)
-        await saveMessage(business.user_id, business.id, from, aiReply?.text || '', false)
+        // Step 9: Check AI reply for lead qualification marker
+        let cleanReply = aiReply?.text || '';
+        let qualificationData: Record<string, string> = {};
+
+        const qualifiedMarker = cleanReply.match(/\[LEAD_READY_TO_NOTIFY:([^\]]+)\]/);
+        if (qualifiedMarker) {
+            // Parse qualification data from marker
+            const markerContent = qualifiedMarker[1];
+            const pairs = markerContent.split(';');
+            for (const pair of pairs) {
+                const [key, ...valueParts] = pair.split('=');
+                if (key && valueParts.length > 0) {
+                    qualificationData[key.trim()] = valueParts.join('=').trim();
+                }
+            }
+            // Remove marker from customer-facing message
+            cleanReply = cleanReply.replace(/\[LEAD_READY_TO_NOTIFY:[^\]]+\]/, '').trim();
+            console.log('🎯 Lead qualified by AI:', qualificationData);
+        }
+
+        // Save AI reply to DB (clean version, no marker)
+        await saveMessage(business.user_id, business.id, from, cleanReply, false)
+
+        // Step 10: Lead detection & owner notification
+        try {
+            const leadResult = await detectLead(userText, conversationHistory)
+
+            // Check if AI marked this as qualified via marker
+            const isQualified = Object.keys(qualificationData).length > 0;
+
+            // ONLY notify when AI has qualified the lead (placed the marker)
+            // # This ensures we collect sufficient data before notifying the owner
+            if (isQualified && business.owner_whatsapp_number) {
+                // Dedupe: check if we already notified for this phone + business in last 24h
+                const { rows: existingLead } = await pool.query(
+                    `SELECT 1 FROM leads
+                     WHERE business_id = $1 AND phone_number = $2
+                     AND notified = TRUE
+                     AND created_at > NOW() - INTERVAL '1 hours'`,
+                    [business.id, from]
+                )
+
+                if (existingLead.length === 0) {
+                    // Build detailed notification message from qualification data
+                    let notifyMsg =
+                        `🎯 NEW QUALIFIED LEAD\n\n` +
+                        `Business: ${business.name}\n` +
+                        `Customer: ${from}${qualificationData.name ? ` (${qualificationData.name})` : ''}\n`;
+
+                    if (qualificationData.interest) notifyMsg += `Interest: ${qualificationData.interest}\n`;
+                    if (qualificationData.timeline) notifyMsg += `Timeline: ${qualificationData.timeline}\n`;
+                    if (qualificationData.budget && qualificationData.budget !== 'NA') notifyMsg += `Budget: ${qualificationData.budget}\n`;
+                    if (qualificationData.decision_maker && qualificationData.decision_maker !== 'NA') notifyMsg += `Decision Maker: ${qualificationData.decision_maker}\n`;
+                    if (qualificationData.contact_preference && qualificationData.contact_preference !== 'NA') notifyMsg += `Contact Preference: ${qualificationData.contact_preference}\n`;
+                    if (qualificationData.notes) notifyMsg += `Notes: ${qualificationData.notes}\n`;
+
+                    notifyMsg += `Time: ${new Date().toLocaleString()}`;
+
+                    // Send notification to owner
+                    await sendLeadNotification(
+                        business.owner_whatsapp_number,
+                        notifyMsg,
+                        whatsappConfig
+                    )
+
+                    // Record lead
+                    await pool.query(
+                        `INSERT INTO leads (business_id, user_id, phone_number, trigger_type, intent_summary, notified, notified_at)
+                         VALUES ($1, $2, $3, $4, $5, TRUE, NOW())`,
+                        [business.id, business.user_id, from, 'ai_qualified', JSON.stringify(qualificationData)]
+                    )
+
+                    console.log(`🎯 Lead notification sent for ${from} (AI qualified)`)
+                } else {
+                    console.log(`🔁 Lead already notified for ${from} within 24h, skipping`)
+                }
+            }
+        } catch (leadErr) {
+            // Never let lead detection break the main flow
+            console.error('❌ Lead detection/notification failed:', leadErr)
+        }
     } catch (err) {
         console.error('❌ Error handling webhook:', err)
         if (!res.headersSent) {
@@ -339,6 +419,7 @@ router.post(
                 id,
                 name,
                 whatsapp_number,
+                owner_whatsapp_number,
                 kb_content,
                 whatsapp_phone_number_id,
                 whatsapp_access_token,
@@ -357,10 +438,10 @@ router.post(
                 // 🔹 EDIT (update existing)
                 const updateRes = await pool.query(
                     `UPDATE business
-           SET name = $1, whatsapp_number = $2, whatsapp_phone_number_id = $3, whatsapp_access_token = $4, waba_id = $5
-           WHERE id = $6 AND user_id = $7
+           SET name = $1, whatsapp_number = $2, owner_whatsapp_number = $3, whatsapp_phone_number_id = $4, whatsapp_access_token = $5, waba_id = $6
+           WHERE id = $7 AND user_id = $8
            RETURNING *`,
-                    [name, whatsapp_number, whatsapp_phone_number_id, whatsapp_access_token, waba_id, id, user_id]
+                    [name, whatsapp_number, owner_whatsapp_number, whatsapp_phone_number_id, whatsapp_access_token, waba_id, id, user_id]
                 );
 
                 if (updateRes.rows.length === 0) {
@@ -378,10 +459,10 @@ router.post(
             } else {
                 // 🔹 CREATE (insert new)
                 const insertRes = await pool.query(
-                    `INSERT INTO business (user_id, name, whatsapp_number, whatsapp_phone_number_id, whatsapp_access_token, waba_id)
-           VALUES ($1, $2, $3, $4, $5, $6)
+                    `INSERT INTO business (user_id, name, whatsapp_number, owner_whatsapp_number, whatsapp_phone_number_id, whatsapp_access_token, waba_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)
            RETURNING *`,
-                    [user_id, name, whatsapp_number, whatsapp_phone_number_id, whatsapp_access_token, waba_id]
+                    [user_id, name, whatsapp_number, owner_whatsapp_number, whatsapp_phone_number_id, whatsapp_access_token, waba_id]
                 );
                 business = insertRes.rows[0];
 

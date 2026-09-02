@@ -144,6 +144,7 @@ interface KnowledgeEditorProps {
     id?: string;
     name: string;
     whatsapp_number: string;
+    owner_whatsapp_number?: string; // Business owner's WhatsApp for lead notifications
     kb_content?: KnowledgeEntry[]; // make it an array
     knowledge_base_embeddings?: KnowledgeEntry[]; // alternative name
     kb?: KnowledgeEntry[]; // alternative name
@@ -161,6 +162,7 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
   const [kbText, setKbText] = useState("");
   const [status, setStatus] = useState("");
   const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [ownerWhatsappNumber, setOwnerWhatsappNumber] = useState(""); // Owner's WhatsApp for lead notifications
   // 🔹 WhatsApp Configuration fields
   const [whatsappPhoneNumberId, setWhatsappPhoneNumberId] = useState("");
   const [whatsappAccessToken, setWhatsappAccessToken] = useState("");
@@ -182,6 +184,7 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
     if (initialBusinessData) {
       setBusinessName(initialBusinessData.name ?? "");
       setWhatsappNumber(initialBusinessData.whatsapp_number ?? "");
+      setOwnerWhatsappNumber(initialBusinessData.owner_whatsapp_number ?? "");
       setWhatsappPhoneNumberId(initialBusinessData.whatsapp_phone_number_id ?? "");
       setWhatsappAccessToken(initialBusinessData.whatsapp_access_token ?? "");
       setWabaId(initialBusinessData.waba_id ?? "");
@@ -201,7 +204,7 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
       //     description: img.description
       //   }))
       // );
-      
+
     }
     // Support both possible field names
     const entries =
@@ -361,6 +364,7 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
             id: isEditMode ? initialBusinessData.id : undefined,
             name: businessName,
             whatsapp_number: whatsappNumber,
+            owner_whatsapp_number: ownerWhatsappNumber,
             whatsapp_phone_number_id: whatsappPhoneNumberId,
             whatsapp_access_token: whatsappAccessToken,
             waba_id: wabaId,
@@ -566,6 +570,34 @@ const KnowledgeEditor: React.FC<KnowledgeEditorProps> = () => {
                     <Info className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span>
                       This should be your WhatsApp Business account number
+                    </span>
+                  </div>
+                </div>
+
+                {/* Owner WhatsApp Number (for lead notifications) */}
+                <div className="space-y-2 sm:space-y-3">
+                  <label className="flex items-center gap-2 text-base sm:text-lg font-semibold text-[#075E54]">
+                    <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
+                    Owner WhatsApp Number (Lead Alerts)
+                  </label>
+                  <div className="relative">
+                    <div className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2">
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-[#25D366] rounded-full flex items-center justify-center">
+                        <ChatIcon className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
+                      </div>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="e.g., +60 12-345 6789"
+                      value={ownerWhatsappNumber}
+                      onChange={(e) => setOwnerWhatsappNumber(e.target.value)}
+                      className="w-full pl-12 sm:pl-16 pr-4 sm:pr-6 py-3 sm:py-4 border-2 border-gray-200 rounded-lg sm:rounded-xl focus:border-[#25D366] focus:ring-4 focus:ring-[#25D366]/20 outline-none transition-all text-base sm:text-lg touch-manipulation"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                    <Info className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span>
+                      Your personal WhatsApp number to receive lead notifications
                     </span>
                   </div>
                 </div>

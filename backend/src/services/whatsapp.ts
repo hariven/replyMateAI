@@ -53,3 +53,20 @@ export async function sendWhatsAppImage(
         }
     );
 }
+
+/**
+ * Sends a lead notification to the business owner's WhatsApp number.
+ * Uses the business's WhatsApp configuration (phone number ID and token) to send the message,
+ * but the recipient is the owner's personal WhatsApp number.
+ */
+export const sendLeadNotification = async (
+    ownerNumber: string,
+    message: string,
+    businessConfig: BusinessWhatsAppConfig
+) => {
+    if (!ownerNumber) {
+        console.warn('⚠️ Cannot send lead notification: owner_whatsapp_number is empty')
+        return
+    }
+    await sendWhatsAppMessage(ownerNumber, message, businessConfig)
+}
