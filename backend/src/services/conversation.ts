@@ -1,6 +1,14 @@
 // services/conversation.ts
 import { pool } from '../db';
 
+export type SenderType = 'customer' | 'ai' | 'human' | 'system';
+
+export interface SaveMessageOptions {
+    messageType?: 'text' | 'image' | 'document' | 'location' | 'voice' | 'link';
+    mediaUrl?: string;
+    mediaMeta?: Record<string, unknown>;
+}
+
 /**
  * Save a message to the conversations table.
  * Validates all required fields before attempting insertion.
@@ -10,8 +18,9 @@ export async function saveMessage(
     businessId: string,
     phone: string | null | undefined,
     message: string,
-    isUser = true,
-    messageId?: string
+    senderType: SenderType = 'customer',
+    messageId?: string,
+    opts?: SaveMessageOptions
 ) {
     // ✅ Validate input
     if (!userId || !businessId || !phone) {
@@ -24,12 +33,25 @@ export async function saveMessage(
         return null; // stop before inserting invalid data
     }
 
+    const isUser = senderType === 'customer';
+
     try {
         const { rows } = await pool.query(
-            `INSERT INTO conversations (user_id, business_id, phone_number, message, is_user, message_id)
-       VALUES ($1, $2, $3, $4, $5, $6)
+            `INSERT INTO conversations (user_id, business_id, phone_number, message, is_user, message_id, sender_type, message_type, media_url, media_meta)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING *`, // ✅ return inserted row if needed
-            [userId, businessId, phone, message, isUser, messageId || null]
+            [
+                userId,
+                businessId,
+                phone,
+                message,
+                isUser,
+                messageId || null,
+                senderType,
+                opts?.messageType || 'text',
+                opts?.mediaUrl || null,
+                opts?.mediaMeta ? JSON.stringify(opts.mediaMeta) : null,
+            ]
         );
 
         return rows[0];
@@ -61,7 +83,7 @@ export async function getConversationContext(
         const { rows } = await pool.query(
             `SELECT message, is_user
        FROM conversations
-       WHERE user_id = $1 AND business_id = $2 AND phone_number = $3
+       WHERE user_id = $1 AND business_id = $2 AND phone_number = $3 AND sender_type != 'system'
        ORDER BY created_at DESC
        LIMIT $4`,
             [userId, businessId, phone, limit]

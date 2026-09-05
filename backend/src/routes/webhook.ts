@@ -174,6 +174,16 @@ import { authenticate, AuthRequest } from '../middleware/authenticate.ts'
 import multer from 'multer'
 import { getConversationContext, saveMessage } from '../services/conversation.ts'
 import { detectLead } from '../services/leadDetection.ts'
+import {
+    upsertOnInbound,
+    upsertOnOutbound,
+    applyAiInsightFromMarker,
+    stashKbSources,
+    detectHumanRequest,
+    markWaitingForHuman,
+    insertSystemEvent,
+    isConversationBlocked,
+} from '../services/conversationState.ts'
 
 const router = express.Router()
 
@@ -289,7 +299,21 @@ router.post('/webhook', authenticate, async (req: AuthRequest, res: Response) =>
         }
 
         // Step 2: Save user message to DB (with messageId for deduplication)
-        await saveMessage(business.user_id, business.id, from, userText, true, messageId)
+        await saveMessage(business.user_id, business.id, from, userText, 'customer', messageId)
+        await upsertOnInbound(business.id, from, business.user_id, userText)
+
+        // A blocked customer's message is still logged above, but the AI must not reply.
+        if (await isConversationBlocked(business.id, from)) {
+            console.log(`🚫 Conversation blocked, skipping AI reply for ${from}`)
+            return
+        }
+
+        // Signal to the owner that the customer explicitly asked for a human — the AI still
+        // replies below as normal, this is just a badge/system-event for the inbox.
+        if (detectHumanRequest(userText)) {
+            await markWaitingForHuman(business.id, from)
+            await insertSystemEvent(business.id, business.user_id, from, 'attention-requested', 'Customer requested a human')
+        }
 
         // Step 3: Get persistent conversation history from DB
         const conversationHistory = await getConversationContext(business.user_id, business.id, from)
@@ -297,6 +321,7 @@ router.post('/webhook', authenticate, async (req: AuthRequest, res: Response) =>
         // Step 4: Get relevant knowledge (RAG)
         const knowledgeArray = await getRelevantKnowledge(business.user_id, business.id, userText, 'cosine')
         const knowledge = knowledgeArray.map(k => k.content).join("\n\n")
+        await stashKbSources(business.id, from, knowledgeArray)
 
         // Step 5: Get relevant image (RAG)
         const imageMatch = await getRelevantImage(business.id, userText)
@@ -316,6 +341,11 @@ router.post('/webhook', authenticate, async (req: AuthRequest, res: Response) =>
         if (imageMatch) {
             console.log(`📷 Sending image: ${imageMatch.description} -> ${imageMatch.url}`)
             await sendWhatsAppImage(from, imageMatch.url, whatsappConfig)
+            await saveMessage(business.user_id, business.id, from, imageMatch.description, 'ai', undefined, {
+                messageType: 'image',
+                mediaUrl: imageMatch.url,
+                mediaMeta: { description: imageMatch.description },
+            })
         }
 
         // Step 9: Check AI reply for lead qualification marker
@@ -339,7 +369,8 @@ router.post('/webhook', authenticate, async (req: AuthRequest, res: Response) =>
         }
 
         // Save AI reply to DB (clean version, no marker)
-        await saveMessage(business.user_id, business.id, from, cleanReply, false)
+        await saveMessage(business.user_id, business.id, from, cleanReply, 'ai')
+        await upsertOnOutbound(business.id, from, 'ai', cleanReply, business.user_id)
 
         // Step 10: Lead detection & owner notification
         try {
@@ -347,6 +378,17 @@ router.post('/webhook', authenticate, async (req: AuthRequest, res: Response) =>
 
             // Check if AI marked this as qualified via marker
             const isQualified = Object.keys(qualificationData).length > 0;
+
+            if (isQualified) {
+                await applyAiInsightFromMarker(business.id, from, qualificationData, leadResult.intentSummary)
+                await insertSystemEvent(
+                    business.id,
+                    business.user_id,
+                    from,
+                    'intent-detected',
+                    `AI detected intent: ${qualificationData.interest || 'General inquiry'}`
+                )
+            }
 
             // ONLY notify when AI has qualified the lead (placed the marker)
             // # This ensures we collect sufficient data before notifying the owner

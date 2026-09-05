@@ -6,6 +6,7 @@ import businessRoutes from './routes/business.ts'
 import authRoutes from './routes/auth.ts'
 import replyRoutes from './routes/reply.ts'
 import paymentRoutes from './routes/payment.ts'
+import conversationsRoutes from './routes/conversations.ts'
 
 dotenv.config({ quiet: true });
 
@@ -35,6 +36,7 @@ app.get('/health', (_req, res) => {
 app.use('/api', webhookRoutes)
 app.use('/api', businessRoutes)
 app.use('/api', replyRoutes)
+app.use('/api', conversationsRoutes)
 app.use("/api", authRoutes);
 app.use("/api/payment", paymentRoutes);
 

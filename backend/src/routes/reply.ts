@@ -3,6 +3,7 @@ import { pool } from '../db';
 import { authenticate, AuthRequest } from '../middleware/authenticate';
 import { sendWhatsAppMessage } from '../services/whatsapp';
 import { saveMessage } from '../services/conversation';
+import { upsertOnOutbound } from '../services/conversationState';
 
 const router = express.Router();
 
@@ -39,14 +40,15 @@ router.post('/reply', authenticate, async (req: AuthRequest, res: Response) => {
     // Send the WhatsApp message
     await sendWhatsAppMessage(phoneNumber, message, config);
 
-    // Save the outgoing message to conversations table (isUser = false for business message)
+    // Save the outgoing message to conversations table, tagged as a human-sent reply
     await saveMessage(
       userId.toString(),
       businessId.toString(),
       phoneNumber,
       message,
-      false // isUser = false indicates business/sent by system
+      'human'
     );
+    await upsertOnOutbound(businessId.toString(), phoneNumber, 'human', message, userId.toString());
 
     res.status(200).json({ success: true, message: 'Message sent successfully' });
   } catch (err) {

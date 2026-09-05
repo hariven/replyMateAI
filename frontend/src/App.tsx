@@ -14,6 +14,7 @@ import ResetPassword from './_components/ResetPassword'
 import Features from './_components/Features'
 import Pricing from './_components/Pricing'
 import About from './_components/About'
+import InboxPage from './inbox/InboxPage'
 
 function App() {
   // const [count, setCount] = useState(0)
@@ -30,6 +31,16 @@ function App() {
           element={
             <PrivateRoute>
               <PrivateDashboard />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Inbox */}
+        <Route
+          path="/inbox"
+          element={
+            <PrivateRoute>
+              <InboxPage />
             </PrivateRoute>
           }
         />

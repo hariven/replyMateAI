@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Chat as ChatIcon,
@@ -13,11 +13,11 @@ import {
   Add,
 } from "@mui/icons-material";
 import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import TextField from "@mui/material/TextField";
+// import Dialog from "@mui/material/Dialog";
+// import DialogTitle from "@mui/material/DialogTitle";
+// import DialogContent from "@mui/material/DialogContent";
+// import DialogActions from "@mui/material/DialogActions";
+// import TextField from "@mui/material/TextField";
 
 interface KB {
   id: number;
@@ -36,9 +36,9 @@ const PrivateDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [businesses, setBusinesses] = React.useState<Business[]>([]);
   // const { id } = useParams<{ id: string }>();
-  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
-  const [replyText, setReplyText] = useState('');
-  const [openReplyModal, setOpenReplyModal] = useState(false);
+  // const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
+  // const [replyText, setReplyText] = useState('');
+  // const [openReplyModal, setOpenReplyModal] = useState(false);
 
   console.log(businesses, "businesses");
 
@@ -86,47 +86,47 @@ const PrivateDashboard: React.FC = () => {
 
   const handleAddBusiness = () => navigate("/kb-editor");
 
-  const handleOpenReply = (business: Business) => {
-    setSelectedBusiness(business);
-    setReplyText('');
-    setOpenReplyModal(true);
-  };
+  // const handleOpenReply = (business: Business) => {
+  //   setSelectedBusiness(business);
+  //   setReplyText('');
+  //   setOpenReplyModal(true);
+  // };
 
-  const handleCloseReply = () => {
-    setOpenReplyModal(false);
-    setSelectedBusiness(null);
-    setReplyText('');
-  };
+  // const handleCloseReply = () => {
+  //   setOpenReplyModal(false);
+  //   setSelectedBusiness(null);
+  //   setReplyText('');
+  // };
 
-  const handleSendReply = async () => {
-    if (!selectedBusiness || !replyText.trim()) return;
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/reply`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          businessId: selectedBusiness.id,
-          phoneNumber: selectedBusiness.whatsapp_number,
-          message: replyText,
-        }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to send reply');
-      }
-      // Optionally show success
-      alert('Reply sent successfully!');
-      handleCloseReply();
-    } catch (err) {
-      console.error('Error sending reply:', err);
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      alert('Failed to send reply: ' + errorMessage);
-    }
-  };
+  // const handleSendReply = async () => {
+  //   if (!selectedBusiness || !replyText.trim()) return;
+  //   try {
+  //     const token = localStorage.getItem('token');
+  //     const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/reply`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       body: JSON.stringify({
+  //         businessId: selectedBusiness.id,
+  //         phoneNumber: selectedBusiness.whatsapp_number,
+  //         message: replyText,
+  //       }),
+  //     });
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       throw new Error(errorData.error || 'Failed to send reply');
+  //     }
+  //     // Optionally show success
+  //     alert('Reply sent successfully!');
+  //     handleCloseReply();
+  //   } catch (err) {
+  //     console.error('Error sending reply:', err);
+  //     const errorMessage = err instanceof Error ? err.message : String(err);
+  //     alert('Failed to send reply: ' + errorMessage);
+  //   }
+  // };
 
   console.log(businesses, "businesses");
 
@@ -193,13 +193,22 @@ const PrivateDashboard: React.FC = () => {
           <h2 className="text-2xl font-bold text-white items-center ">
             Your WhatsApp Businesses
           </h2>
-          <Button
-            onClick={handleAddBusiness}
-            className="!sm:text-lg !bg-white !text-black p-2 "
-          >
-            <Add className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 group-hover:text-white" />
-            Add New Business
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => navigate("/inbox")}
+              className="!sm:text-lg !bg-white !text-black p-2 "
+            >
+              <ChatIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 group-hover:text-white" />
+              Open Inbox
+            </Button>
+            <Button
+              onClick={handleAddBusiness}
+              className="!sm:text-lg !bg-white !text-black p-2 "
+            >
+              <Add className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 group-hover:text-white" />
+              Add New Business
+            </Button>
+          </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {businesses.map((biz, i) => (
@@ -256,12 +265,12 @@ const PrivateDashboard: React.FC = () => {
                   >
                     Edit
                   </button>
-                  <button
+                  {/* <button
                     onClick={() => handleOpenReply(biz)}
                     className="px-3 py-1 bg-[#25D366] text-white rounded-full text-xs sm:text-sm hover:bg-[#128C7E] transition"
                   >
                     Reply manually
-                  </button>
+                  </button> */}
                 </div>
               </div>
             </div>
@@ -283,8 +292,8 @@ const PrivateDashboard: React.FC = () => {
             </p>
           </div>
         </div>
-        <Dialog open={openReplyModal} onClose={handleCloseReply}>
-          <DialogTitle>Reply Manually</DialogTitle>
+        {/* <Dialog open={openReplyModal} onClose={handleCloseReply}>
+          {/* <DialogTitle>Reply Manually</DialogTitle> *
           <DialogContent>
             <TextField
               label="Reply"
@@ -305,7 +314,7 @@ const PrivateDashboard: React.FC = () => {
               Send Reply
             </Button>
           </DialogActions>
-        </Dialog>
+        </Dialog> */}
       </div>
     </div>
   );
