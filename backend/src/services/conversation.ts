@@ -39,7 +39,8 @@ export async function saveMessage(
         const { rows } = await pool.query(
             `INSERT INTO conversations (user_id, business_id, phone_number, message, is_user, message_id, sender_type, message_type, media_url, media_meta)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-       RETURNING *`, // ✅ return inserted row if needed
+       ON CONFLICT (message_id) DO NOTHING
+       RETURNING *`, // ✅ returns no row when message_id was already saved (duplicate delivery)
             [
                 userId,
                 businessId,
@@ -54,7 +55,8 @@ export async function saveMessage(
             ]
         );
 
-        return rows[0];
+        // null when the insert was skipped because message_id already exists
+        return rows[0] ?? null;
     } catch (error) {
         console.error('❌ Error saving message:', error);
         throw error;

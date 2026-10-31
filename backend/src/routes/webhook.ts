@@ -232,6 +232,16 @@ router.post('/webhook', async (req: AuthRequest, res: Response) => {
             return res.sendStatus(200)
         }
 
+        // Ignore stale deliveries: Meta retries failed webhooks for a long time, and
+        // replying to a message sent hours ago confuses the customer.
+        // Meta's `timestamp` is Unix seconds as a string.
+        // const MAX_MESSAGE_AGE_MS = 5 * 60 * 1000
+        // const sentAtMs = Number(message?.timestamp) * 1000
+        // if (!sentAtMs || Date.now() - sentAtMs > MAX_MESSAGE_AGE_MS) {
+        //     console.log('Stale or invalid message timestamp, skipping:', messageId, message?.timestamp)
+        //     return res.sendStatus(200)
+        // }
+
         // ✅ ACCESS CONTROL: Check if user has active subscription
         // if (!req.user.hasActiveAccess) {
         //     console.log(`🔒 Webhook access denied for user ${req.user.userId} - no active access`)
@@ -259,16 +269,6 @@ router.post('/webhook', async (req: AuthRequest, res: Response) => {
             to,
             userText
         })
-
-        // ✅ DEDUPLICATION: Check if message already processed
-        const { rows: existing } = await pool.query(
-            'SELECT 1 FROM conversations WHERE message_id = $1',
-            [messageId]
-        )
-        if (existing.length > 0) {
-            console.log('Duplicate messageId, skipping:', messageId)
-            return res.sendStatus(200)
-        }
 
         // Respond to WhatsApp immediately. If we make it wait on DB/RAG/OpenAI
         // calls before replying, it can time out and redeliver this same
@@ -298,8 +298,13 @@ router.post('/webhook', async (req: AuthRequest, res: Response) => {
             waba_id: business.waba_id
         }
 
-        // Step 2: Save user message to DB (with messageId for deduplication)
-        await saveMessage(business.user_id, business.id, from, userText, 'customer', messageId)
+        // Step 2: Save user message to DB. The unique message_id constraint makes this
+        // the dedup check: a redelivered message inserts nothing and is skipped here.
+        const savedInbound = await saveMessage(business.user_id, business.id, from, userText, 'customer', messageId)
+        if (!savedInbound) {
+            console.log('Duplicate messageId, skipping:', messageId)
+            return
+        }
         await upsertOnInbound(business.id, from, business.user_id, userText)
 
         // A blocked customer's message is still logged above, but the AI must not reply.
