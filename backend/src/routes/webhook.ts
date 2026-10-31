@@ -269,6 +269,8 @@ router.post('/webhook', async (req: AuthRequest, res: Response) => {
             to,
             userText
         })
+        // TEMP: full payload to investigate unexpected inbound messages. Remove after debugging.
+        console.log('[DEBUG] Full inbound payload:', JSON.stringify(req.body))
 
         // Respond to WhatsApp immediately. If we make it wait on DB/RAG/OpenAI
         // calls before replying, it can time out and redeliver this same
