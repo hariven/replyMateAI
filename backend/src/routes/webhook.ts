@@ -203,7 +203,7 @@ router.get('/webhook', (req: Request, res: Response) => {
 })
 
 // ✅ Incoming WhatsApp Messages
-router.post('/webhook', authenticate, async (req: AuthRequest, res: Response) => {
+router.post('/webhook', async (req: AuthRequest, res: Response) => {
     try {
         const entry = req.body?.entry?.[0]
         const changes = entry?.changes?.[0]
@@ -233,25 +233,25 @@ router.post('/webhook', authenticate, async (req: AuthRequest, res: Response) =>
         }
 
         // ✅ ACCESS CONTROL: Check if user has active subscription
-        if (!req.user.hasActiveAccess) {
-            console.log(`🔒 Webhook access denied for user ${req.user.userId} - no active access`)
-            // Optional: Send a WhatsApp notification about expired subscription
-            try {
-                // We need to get the WhatsApp config to send a message
-                const fallbackConfig: BusinessWhatsAppConfig = {
-                    whatsapp_phone_number_id: process.env.WHATSAPP_PHONE_ID || '',
-                    whatsapp_access_token: process.env.WHATSAPP_TOKEN || ''
-                }
-                await sendWhatsAppMessage(
-                    from,
-                    'Your ReplyMate subscription has expired. Please renew to continue using the service.',
-                    fallbackConfig
-                )
-            } catch (notifyError) {
-                console.error('Failed to send subscription expiration notification:', notifyError)
-            }
-            return res.sendStatus(200)
-        }
+        // if (!req.user.hasActiveAccess) {
+        //     console.log(`🔒 Webhook access denied for user ${req.user.userId} - no active access`)
+        //     // Optional: Send a WhatsApp notification about expired subscription
+        //     try {
+        //         // We need to get the WhatsApp config to send a message
+        //         const fallbackConfig: BusinessWhatsAppConfig = {
+        //             whatsapp_phone_number_id: process.env.WHATSAPP_PHONE_ID || '',
+        //             whatsapp_access_token: process.env.WHATSAPP_TOKEN || ''
+        //         }
+        //         await sendWhatsAppMessage(
+        //             from,
+        //             'Your ReplyMate subscription has expired. Please renew to continue using the service.',
+        //             fallbackConfig
+        //         )
+        //     } catch (notifyError) {
+        //         console.error('Failed to send subscription expiration notification:', notifyError)
+        //     }
+        //     return res.sendStatus(200)
+        // }
 
         console.log('Webhook received:', {
             messageId,

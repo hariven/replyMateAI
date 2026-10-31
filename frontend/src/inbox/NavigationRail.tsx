@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Inbox, Flame, BarChart3, BookOpen, Zap, Settings } from "lucide-react";
+import { ArrowLeft, Inbox, Flame, BarChart3, BookOpen, Zap, Settings } from "lucide-react";
 
 const ITEMS = [
   { key: "inbox", label: "Inbox", icon: Inbox, active: true, path: null },
@@ -15,6 +15,14 @@ export default function NavigationRail() {
 
   return (
     <div className="flex h-full w-14 shrink-0 flex-col items-center gap-1 border-r border-[#2C2C2C] bg-[#1A1A1A] py-4">
+      <button
+        title="Back to Dashboard"
+        onClick={() => navigate("/dashboard")}
+        className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg text-[#8696A0] transition-colors hover:bg-[#202020] hover:text-[#E9EDEF]"
+      >
+        <ArrowLeft size={18} />
+      </button>
+      <div className="mb-1 h-px w-8 bg-[#2C2C2C]" />
       {ITEMS.map((item) => {
         const Icon = item.icon;
         const clickable = item.active || !!item.path;
